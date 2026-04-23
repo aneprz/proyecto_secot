@@ -1,0 +1,18 @@
+{
+  "scripts": {
+    "db:validate": "powershell -ExecutionPolicy Bypass -File scripts/liquibase.ps1 validate",
+    "db:status": "powershell -ExecutionPolicy Bypass -File scripts/liquibase.ps1 status",
+    "db:update": "powershell -ExecutionPolicy Bypass -File scripts/liquibase.ps1 update",
+    "db:history": "powershell -ExecutionPolicy Bypass -File scripts/liquibase.ps1 history",
+    "db:tag": "powershell -ExecutionPolicy Bypass -File scripts/liquibase.ps1 tag",
+    "db:rollback:count": "powershell -ExecutionPolicy Bypass -File scripts/liquibase.ps1 rollbackCount",
+    "backend:dev": "powershell -NoProfile -Command \"cd backend; uvicorn app.main:app --reload --port 8000\"",
+    "frontend:install": "npm --prefix frontend install",
+    "frontend:dev": "npm --prefix frontend run dev",
+    "frontend:build": "npm --prefix frontend run build",
+    "frontend:preview": "npm --prefix frontend run preview"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.104.0"
+  }
+}

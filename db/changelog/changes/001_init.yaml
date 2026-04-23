@@ -1,0 +1,26 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-init
+      author: proyecto_secot
+      changes:
+        - createTable:
+            tableName: personas
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: nombre
+                  type: VARCHAR(120)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false

@@ -1,0 +1,24 @@
+.env
+
+# Local env variants (but keep the template tracked)
+.env.*
+!.env.example
+node_modules/
+credenciales.env
+liquibase.local.properties
+db/drivers/*.jar
+
+# Python
+backend/.venv/
+backend/venv/
+backend/.env
+backend/.env.*
+backend/__pycache__/
+backend/**/*.pyc
+.pytest_cache/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.*
