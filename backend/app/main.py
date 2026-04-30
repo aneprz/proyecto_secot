@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .db import get_connection
+from .routers.auth import router as auth_router
 from .routers.seniors import router as seniors_router
 from .settings import settings
 
@@ -34,3 +35,4 @@ def db_ping():
 
 
 app.include_router(seniors_router)
+app.include_router(auth_router)

@@ -43,3 +43,11 @@ Changelog principal: `db/changelog/db.changelog-master.yaml`
 
 - API: `backend/app/routers/seniors.py`
 - UI: `frontend/src/ui/App.jsx`
+
+## Pruebas API (Postman/Newman)
+
+- Colección: `postman/SECOT-Bizkaia-API.postman_collection.json`
+- Ejecutar en local (requiere API levantada): `npx -y newman run postman/SECOT-Bizkaia-API.postman_collection.json -e postman/SECOT-Bizkaia-API.postman_environment.json --env-var baseUrl=http://localhost:8000 --env-var username=admin --env-var password=TU_PASSWORD`
+- CI: workflow `Postman API tests` (GitHub Actions). Define secretos:
+  - `API_BASE_URL` (URL del backend, p.ej. `https://<tu-servicio>.onrender.com`)
+  - `API_AUTH_USER` y `API_AUTH_PASS`

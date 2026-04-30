@@ -1,0 +1,276 @@
+{
+  "info": {
+    "name": "SECOT Bizkaia API - CRUD Seniors",
+    "_postman_id": "f1f1e91f-2e9c-4b61-9a8c-0a729a5f0a23",
+    "description": "Pruebas CRUD (C, R, U, D) para /seniors.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth - Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('tiene access_token', () => pm.expect(json).to.have.property('access_token'));",
+              "pm.collectionVariables.set('access_token', json.access_token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "C - Create Senior",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const ts = new Date().toISOString().replace(/[-:.TZ]/g, '');",
+              "const email = `postman.${ts}@example.com`;",
+              "pm.collectionVariables.set('email', email);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201 Created', () => pm.response.to.have.status(201));",
+              "",
+              "const json = pm.response.json();",
+              "pm.test('tiene senior_id', () => pm.expect(json).to.have.property('senior_id'));",
+              "pm.collectionVariables.set('senior_id', json.senior_id);",
+              "",
+              "pm.test('email coincide', () => pm.expect(json.email).to.eql(pm.collectionVariables.get('email')));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Postman\",\n  \"apellidos\": \"CRUD\",\n  \"email\": \"{{email}}\",\n  \"movil\": \"600000000\",\n  \"fecha_alta\": \"2026-01-01\",\n  \"activo\": true\n}\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/seniors",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "seniors"
+          ]
+        }
+      }
+    },
+    {
+      "name": "R - Read Senior",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('senior_id coincide', () => pm.expect(json.senior_id).to.eql(+pm.collectionVariables.get('senior_id')));",
+              "pm.test('email coincide', () => pm.expect(json.email).to.eql(pm.collectionVariables.get('email')));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/seniors/{{senior_id}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "seniors",
+            "{{senior_id}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "U - Update Senior",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('movil actualizado', () => pm.expect(json.movil).to.eql('600000001'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"movil\": \"600000001\"\n}\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/seniors/{{senior_id}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "seniors",
+            "{{senior_id}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "D - Delete Senior (hard)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('204 No Content', () => pm.response.to.have.status(204));",
+              "",
+              "pm.sendRequest({",
+              "  url: `${pm.variables.get('baseUrl')}/seniors/${pm.variables.get('senior_id')}`,",
+              "  method: 'GET'",
+              "}, (err, res) => {",
+              "  pm.test('después de hard delete devuelve 404', () => {",
+              "    pm.expect(err).to.equal(null);",
+              "    pm.expect(res.code).to.eql(404);",
+              "  });",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/seniors/{{senior_id}}?hard=true",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "seniors",
+            "{{senior_id}}"
+          ],
+          "query": [
+            {
+              "key": "hard",
+              "value": "true"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "username",
+      "value": "admin"
+    },
+    {
+      "key": "password",
+      "value": ""
+    },
+    {
+      "key": "access_token",
+      "value": ""
+    },
+    {
+      "key": "email",
+      "value": ""
+    },
+    {
+      "key": "senior_id",
+      "value": ""
+    }
+  ]
+}

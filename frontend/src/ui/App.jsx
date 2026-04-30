@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 
+import { getAccessToken, login, logout } from "../api/auth.js";
 import {
   createSenior,
   deleteSenior,
@@ -8,6 +9,10 @@ import {
 } from "../api/seniors.js";
 
 export default function App() {
+  const [token, setToken] = useState(() => getAccessToken());
+  const [loginUsername, setLoginUsername] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [items, setItems] = useState([]);
@@ -41,9 +46,33 @@ export default function App() {
   }
 
   useEffect(() => {
+    if (!token) return;
     refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [includeInactive]);
+  }, [includeInactive, token]);
+
+  async function onLoginSubmit(e) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    try {
+      await login({ username: loginUsername.trim(), password: loginPassword });
+      setToken(getAccessToken());
+      setLoginPassword("");
+    } catch (e2) {
+      setError(e2?.message || String(e2));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function onLogout() {
+    logout();
+    setToken("");
+    setItems([]);
+    setEditingId(null);
+    setForm(emptyForm);
+  }
 
   function onChange(e) {
     const { name, type, value, checked } = e.target;
@@ -111,6 +140,57 @@ export default function App() {
     }
   }
 
+  if (!token) {
+    return (
+      <div style={{ fontFamily: "system-ui", padding: 24, lineHeight: 1.4 }}>
+        <h1>SECOT Bizkaia</h1>
+        <h2>Login</h2>
+        <form
+          onSubmit={onLoginSubmit}
+          style={{ display: "grid", gap: 10, maxWidth: 420 }}
+        >
+          <div style={{ display: "grid", gap: 6 }}>
+            <label>Usuario</label>
+            <input
+              value={loginUsername}
+              onChange={(e) => setLoginUsername(e.target.value)}
+              autoComplete="username"
+              required
+            />
+          </div>
+          <div style={{ display: "grid", gap: 6 }}>
+            <label>Contraseña</label>
+            <input
+              type="password"
+              value={loginPassword}
+              onChange={(e) => setLoginPassword(e.target.value)}
+              autoComplete="current-password"
+              required
+            />
+          </div>
+          <button type="submit" disabled={loading}>
+            Entrar
+          </button>
+        </form>
+
+        {error ? (
+          <pre
+            style={{
+              background: "#fee",
+              color: "#600",
+              padding: 12,
+              borderRadius: 8,
+              marginTop: 12,
+              whiteSpace: "pre-wrap",
+            }}
+          >
+            {error}
+          </pre>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <div style={{ fontFamily: "system-ui", padding: 24, lineHeight: 1.4 }}>
       <h1>SECOT Bizkaia</h1>
@@ -122,6 +202,9 @@ export default function App() {
       <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
         <button onClick={refresh} disabled={loading}>
           Recargar
+        </button>
+        <button onClick={onLogout} disabled={loading}>
+          Salir
         </button>
         <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <input

@@ -1,10 +1,11 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from psycopg.rows import dict_row
 
+from ..auth import require_auth
 from ..db import get_connection
 from ..models import SeniorCreate, SeniorOut, SeniorUpdate
 
-router = APIRouter(prefix="/seniors", tags=["seniors"])
+router = APIRouter(prefix="/seniors", tags=["seniors"], dependencies=[Depends(require_auth)])
 
 
 def _row_to_senior(row) -> SeniorOut:
@@ -119,4 +120,3 @@ def delete_senior(senior_id: int, hard: bool = False):
             if cur.rowcount == 0:
                 raise HTTPException(status_code=404, detail="Senior no encontrado")
             conn.commit()
-

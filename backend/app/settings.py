@@ -20,6 +20,12 @@ class Settings(BaseSettings):
     supabase_db_user: str | None = None
     supabase_db_password: str | None = None
 
+    auth_secret_key: str = "CHANGE_ME"
+    auth_access_token_expire_minutes: int = 60 * 8
+    auth_username: str = "admin"
+    # Recomendado: guardar el hash en env (bcrypt). Ej: $2b$...
+    auth_password_hash: str | None = None
+
     @field_validator("backend_cors_origins", mode="before")
     @classmethod
     def _parse_cors_origins(cls, value):

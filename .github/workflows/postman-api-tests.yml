@@ -1,0 +1,51 @@
+name: Postman API tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  deployment_status:
+
+jobs:
+  postman:
+    name: Run Postman (Newman)
+    runs-on: ubuntu-latest
+    if: github.event_name != 'deployment_status' || github.event.deployment_status.state == 'success'
+    env:
+      BASE_URL: ${{ github.event.deployment_status.environment_url || secrets.API_BASE_URL }}
+      AUTH_USER: ${{ secrets.API_AUTH_USER }}
+      AUTH_PASS: ${{ secrets.API_AUTH_PASS }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Newman
+        run: npm i -g newman
+
+      - name: Run collection
+        id: newman
+        continue-on-error: true
+        run: |
+          if [ -z "${BASE_URL}" ]; then
+            echo "Missing BASE_URL. Define secrets.API_BASE_URL or set deployment environment_url."
+            exit 2
+          fi
+
+          newman run postman/SECOT-Bizkaia-API.postman_collection.json \
+            -e postman/SECOT-Bizkaia-API.postman_environment.json \
+            --env-var "baseUrl=${BASE_URL}" \
+            --env-var "username=${AUTH_USER}" \
+            --env-var "password=${AUTH_PASS}" \
+            --reporters cli,json \
+            --reporter-json-export newman-report.json
+
+      - name: Summarize results
+        if: always()
+        run: node scripts/postman/summarize-newman.mjs newman-report.json >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail job on test failures
+        if: steps.newman.outcome == 'failure'
+        run: exit 1
