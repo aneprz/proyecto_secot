@@ -20,10 +20,13 @@
 
 ## Deploy (Render)
 - Start command recomendado:
-  - `python3 -m uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+  - `python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT`
 - Variables de entorno (en Render):
   - `DATABASE_URL` (recomendado) **o** `SUPABASE_DB_HOST`, `SUPABASE_DB_USER`, `SUPABASE_DB_PASSWORD` (+ opcionales)
-  - `BACKEND_CORS_ORIGINS` con tu dominio de Vercel (p.ej. `https://mi-app.vercel.app`)
+  - `BACKEND_CORS_ORIGINS` con tu dominio de Vercel (CSV o JSON). Ej:
+    - `https://mi-app.vercel.app`
+    - `https://mi-app.vercel.app,https://otro-dominio.com`
+    - `["https://mi-app.vercel.app"]`
   - Opcional: `BACKEND_CORS_ORIGIN_REGEX` si quieres permitir previews (p.ej. `^https://.*\\.vercel\\.app$`)
   - Auth:
     - `AUTH_SECRET_KEY` (obligatorio en prod)

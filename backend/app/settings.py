@@ -1,6 +1,6 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import field_validator
 import json
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -8,7 +8,10 @@ class Settings(BaseSettings):
 
     database_url: str | None = None
 
-    backend_cors_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
+    # En Render / producción, define `BACKEND_CORS_ORIGINS` como CSV o JSON:
+    # - CSV:  https://mi-app.vercel.app,https://otro.com
+    # - JSON: ["https://mi-app.vercel.app","https://otro.com"]
+    backend_cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
     # Útil para Vercel previews (p.ej. ^https://.*\\.vercel\\.app$)
     backend_cors_origin_regex: str | None = None
 
@@ -26,21 +29,13 @@ class Settings(BaseSettings):
     # Recomendado: guardar el hash en env (bcrypt). Ej: $2b$...
     auth_password_hash: str | None = None
 
-    @field_validator("backend_cors_origins", mode="before")
-    @classmethod
-    def _parse_cors_origins(cls, value):
-        if value is None:
+    def cors_allow_origins(self) -> list[str]:
+        raw = (self.backend_cors_origins or "").strip()
+        if not raw:
             return []
-        if isinstance(value, list):
-            return value
-        if isinstance(value, str):
-            raw = value.strip()
-            if not raw:
-                return []
-            if raw.startswith("["):
-                return json.loads(raw)
-            return [origin.strip() for origin in raw.split(",") if origin.strip()]
-        return value
+        if raw.startswith("["):
+            return json.loads(raw)
+        return [origin.strip() for origin in raw.split(",") if origin.strip()]
 
     def build_database_url(self) -> str | None:
         if self.database_url:

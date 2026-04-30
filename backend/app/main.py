@@ -9,7 +9,7 @@ from .settings import settings
 app = FastAPI(title="SECOT Bizkaia API", version="0.1.0")
 
 cors_kwargs = {
-    "allow_origins": settings.backend_cors_origins,
+    "allow_origins": settings.cors_allow_origins(),
     "allow_credentials": True,
     "allow_methods": ["*"],
     "allow_headers": ["*"],
