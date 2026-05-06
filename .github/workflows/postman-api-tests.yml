@@ -15,6 +15,8 @@ jobs:
       BASE_URL: ${{ github.event.deployment_status.environment_url || secrets.API_BASE_URL }}
       AUTH_USER: ${{ secrets.API_AUTH_USER }}
       AUTH_PASS: ${{ secrets.API_AUTH_PASS }}
+      # Opt into Node.js 24 runtime for JavaScript actions ahead of the runner default switch (June 2nd, 2026).
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@v4
 
@@ -74,7 +76,15 @@ jobs:
 
       - name: Summarize results
         if: always()
-        run: node scripts/postman/summarize-newman.mjs newman-report.json >> "$GITHUB_STEP_SUMMARY"
+        shell: bash
+        run: |
+          if [ -f newman-report.json ]; then
+            node scripts/postman/summarize-newman.mjs newman-report.json >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "## Postman API tests" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "- `newman-report.json` not found (Newman did not run or failed before exporting the report)." >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Upload newman report artifact
         if: always()
@@ -82,7 +92,7 @@ jobs:
         with:
           name: newman-report
           path: newman-report.json
-          if-no-files-found: error
+          if-no-files-found: warn
 
       - name: Fail job on test failures
         if: steps.newman.outcome == 'failure'
