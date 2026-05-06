@@ -51,3 +51,4 @@ Changelog principal: `db/changelog/db.changelog-master.yaml`
 - CI: workflow `Postman API tests` (GitHub Actions). Define secretos:
   - `API_BASE_URL` (URL del backend, p.ej. `https://<tu-servicio>.onrender.com`) como **Variable** o **Secret**
   - `API_AUTH_USER` y `API_AUTH_PASS` como **Variables** o **Secrets** (credenciales válidas en ese entorno; si no, `/auth/login` devolverá 401 y el resto fallará)
+  - Si las defines en `Settings → Environments → Production`, el job debe correr con `environment: Production` (ya está configurado en el workflow).

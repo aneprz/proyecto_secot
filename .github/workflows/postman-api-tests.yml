@@ -10,6 +10,8 @@ jobs:
   postman:
     name: Run Postman (Newman)
     runs-on: ubuntu-latest
+    # Needed to load Environment-scoped Variables/Secrets (Settings → Environments → Production)
+    environment: Production
     if: github.event_name != 'deployment_status' || github.event.deployment_status.state == 'success'
     env:
       # Allow configuration via GitHub Environment URL, repo Variables, or Secrets.
