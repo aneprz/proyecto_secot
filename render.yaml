@@ -4,9 +4,9 @@ services:
     runtime: python
     plan: free
     rootDir: backend
-    # Use Render's managed virtualenv (python/pip on PATH). Avoid /usr/bin/python3 which bypasses the venv.
-    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
-    startCommand: python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    # Create an explicit venv inside rootDir so the same interpreter is used for both build and start.
+    buildCommand: python3 -m venv .venv && . .venv/bin/activate && pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: .venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
       - key: PYTHON_VERSION
