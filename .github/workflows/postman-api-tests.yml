@@ -12,9 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name != 'deployment_status' || github.event.deployment_status.state == 'success'
     env:
-      BASE_URL: ${{ github.event.deployment_status.environment_url || secrets.API_BASE_URL }}
-      AUTH_USER: ${{ secrets.API_AUTH_USER }}
-      AUTH_PASS: ${{ secrets.API_AUTH_PASS }}
+      # Allow configuration via GitHub Environment URL, repo Variables, or Secrets.
+      BASE_URL: ${{ github.event.deployment_status.environment_url || vars.API_BASE_URL || secrets.API_BASE_URL }}
+      AUTH_USER: ${{ vars.API_AUTH_USER || secrets.API_AUTH_USER }}
+      AUTH_PASS: ${{ vars.API_AUTH_PASS || secrets.API_AUTH_PASS }}
       # Opt into Node.js 24 runtime for JavaScript actions ahead of the runner default switch (June 2nd, 2026).
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
@@ -31,8 +32,23 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          echo "BASE_URL=${BASE_URL}" >> "$GITHUB_STEP_SUMMARY"
-          code="$(curl -sS -o /tmp/health.json -w "%{http_code}" "${BASE_URL}/health" || true)"
+
+          if [ -z "${BASE_URL}" ]; then
+            echo "## Postman API tests" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "- Missing \`BASE_URL\`. Set \`API_BASE_URL\` as a repo Variable/Secret, or run on a deployment_status event with environment_url." >> "$GITHUB_STEP_SUMMARY"
+            exit 2
+          fi
+
+          # Normalize URL (add scheme if missing, strip trailing slash).
+          base="${BASE_URL%/}"
+          if [[ "${base}" != http://* && "${base}" != https://* ]]; then
+            base="https://${base}"
+          fi
+
+          echo "BASE_URL=${base}" >> "$GITHUB_STEP_SUMMARY"
+          : > /tmp/health.json
+          code="$(curl -sS -o /tmp/health.json -w "%{http_code}" "${base}/health" || true)"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "### Health check" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
@@ -59,7 +75,7 @@ jobs:
           # Only override username/password if provided; otherwise keep collection defaults.
           # This makes the workflow usable without secrets in dev/staging environments.
           newman_args=(
-            --env-var "baseUrl=${BASE_URL}"
+            --env-var "baseUrl=${base}"
           )
           if [ -n "${AUTH_USER}" ]; then
             newman_args+=(--env-var "username=${AUTH_USER}")
