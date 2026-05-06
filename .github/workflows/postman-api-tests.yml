@@ -25,6 +25,26 @@ jobs:
       - name: Install Newman
         run: npm i -g newman
 
+      - name: Sanity check /health
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "BASE_URL=${BASE_URL}" >> "$GITHUB_STEP_SUMMARY"
+          code="$(curl -sS -o /tmp/health.json -w "%{http_code}" "${BASE_URL}/health" || true)"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Health check" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- GET /health -> HTTP **${code}**" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          if [ "${code}" != "200" ]; then
+            echo "Response:" >> "$GITHUB_STEP_SUMMARY"
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat /tmp/health.json >> "$GITHUB_STEP_SUMMARY" || true
+            echo '' >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
       - name: Run collection
         id: newman
         continue-on-error: true
