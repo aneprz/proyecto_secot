@@ -258,7 +258,7 @@
     },
     {
       "key": "password",
-      "value": ""
+      "value": "admin"
     },
     {
       "key": "access_token",

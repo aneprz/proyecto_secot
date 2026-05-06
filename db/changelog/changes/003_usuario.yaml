@@ -1,0 +1,73 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-usuario
+      author: proyecto_secot
+      changes:
+        - createTable:
+            tableName: usuario
+            columns:
+              - column:
+                  name: usuario_id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: username
+                  type: VARCHAR(80)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: email
+                  type: VARCHAR(254)
+              - column:
+                  name: password_hash
+                  type: TEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: rol
+                  type: VARCHAR(30)
+                  defaultValue: user
+                  constraints:
+                    nullable: false
+              - column:
+                  name: senior_id
+                  type: BIGINT
+              - column:
+                  name: activo
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+              - column:
+                  name: creado_en
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: ultimo_login_en
+                  type: TIMESTAMP WITH TIME ZONE
+        - addUniqueConstraint:
+            tableName: usuario
+            columnNames: username
+            constraintName: uq_usuario_username
+        - addUniqueConstraint:
+            tableName: usuario
+            columnNames: email
+            constraintName: uq_usuario_email
+        - addForeignKeyConstraint:
+            baseTableName: usuario
+            baseColumnNames: senior_id
+            referencedTableName: senior
+            referencedColumnNames: senior_id
+            constraintName: fk_usuario_senior
+            onDelete: SET NULL
+        - createIndex:
+            tableName: usuario
+            indexName: ix_usuario_senior_id
+            columns:
+              - column:
+                  name: senior_id

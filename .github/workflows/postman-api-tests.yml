@@ -34,11 +34,21 @@ jobs:
             exit 2
           fi
 
+          # Only override username/password if provided; otherwise keep collection defaults.
+          # This makes the workflow usable without secrets in dev/staging environments.
+          newman_args=(
+            --env-var "baseUrl=${BASE_URL}"
+          )
+          if [ -n "${AUTH_USER}" ]; then
+            newman_args+=(--env-var "username=${AUTH_USER}")
+          fi
+          if [ -n "${AUTH_PASS}" ]; then
+            newman_args+=(--env-var "password=${AUTH_PASS}")
+          fi
+
           newman run postman/SECOT-Bizkaia-API.postman_collection.json \
             -e postman/SECOT-Bizkaia-API.postman_environment.json \
-            --env-var "baseUrl=${BASE_URL}" \
-            --env-var "username=${AUTH_USER}" \
-            --env-var "password=${AUTH_PASS}" \
+            "${newman_args[@]}" \
             --reporters cli,json \
             --reporter-json-export newman-report.json
 

@@ -1,0 +1,69 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-grupo_seniors_relation
+      author: proyecto_secot
+      changes:
+        # Primero, asegurarse de que grupo usa "nombre" no "nombre_grupo"
+        # y ajustar la estructura
+        - createTable:
+            tableName: grupo_senior
+            columns:
+              - column:
+                  name: grupo_senior_id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: grupo_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: senior_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: rol_en_grupo
+                  type: VARCHAR(50)
+                  defaultValue: miembro
+                  constraints:
+                    nullable: false
+              - column:
+                  name: fecha_alta
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: grupo_senior
+            baseColumnNames: grupo_id
+            referencedTableName: grupo
+            referencedColumnNames: grupo_id
+            constraintName: fk_grupo_senior_grupo
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            baseTableName: grupo_senior
+            baseColumnNames: senior_id
+            referencedTableName: senior
+            referencedColumnNames: senior_id
+            constraintName: fk_grupo_senior_senior
+            onDelete: CASCADE
+        - addUniqueConstraint:
+            tableName: grupo_senior
+            columnNames: grupo_id, senior_id
+            constraintName: uq_grupo_senior_unique
+        - createIndex:
+            tableName: grupo_senior
+            indexName: ix_grupo_senior_grupo_id
+            columns:
+              - column:
+                  name: grupo_id
+        - createIndex:
+            tableName: grupo_senior
+            indexName: ix_grupo_senior_senior_id
+            columns:
+              - column:
+                  name: senior_id

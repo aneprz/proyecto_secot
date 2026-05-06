@@ -30,11 +30,15 @@
   - Opcional: `BACKEND_CORS_ORIGIN_REGEX` si quieres permitir previews (p.ej. `^https://.*\\.vercel\\.app$`)
   - Auth:
     - `AUTH_SECRET_KEY` (obligatorio en prod)
-    - `AUTH_USERNAME`
-    - `AUTH_PASSWORD_HASH` (bcrypt)
+    - `AUTH_USERNAME` / `AUTH_PASSWORD_HASH` (bcrypt) como **admin de bootstrap**:
+      - Si la tabla `usuario` **no existe**: login por env (como antes).
+      - Si la tabla `usuario` **existe y está vacía**: permite 1º login por env para crear el primer usuario (admin) en BD.
+      - Si la tabla `usuario` **tiene usuarios**: el login pasa a depender **exclusivamente** de la tabla `usuario`.
 
 ## Endpoints
 - `GET /health`
 - `POST /auth/login`
+- `GET /usuarios` / `POST /usuarios`
+- `GET /usuarios/{id}` / `PATCH /usuarios/{id}` / `DELETE /usuarios/{id}`
 - `GET /seniors` / `POST /seniors`
 - `GET /seniors/{id}` / `PATCH /seniors/{id}` / `DELETE /seniors/{id}`

@@ -1,0 +1,39 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-grupo
+      author: proyecto_secot
+      changes:
+        - createTable:
+            tableName: grupo
+            columns:
+              - column:
+                  name: grupo_id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: nombre
+                  type: VARCHAR(120)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: descripcion
+                  type: TEXT
+              - column:
+                  name: activo
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+              - column:
+                  name: creado_en
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: grupo
+            columnNames: nombre
+            constraintName: uq_grupo_nombre

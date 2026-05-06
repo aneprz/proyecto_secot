@@ -3,3 +3,7 @@ databaseChangeLog:
       file: db/changelog/changes/001_init.yaml
   - include:
       file: db/changelog/changes/002_secot_schema.yaml
+  - include:
+      file: db/changelog/changes/003_usuario.yaml
+  - include:
+      file: db/changelog/changes/004_grupo_seniors.yaml
