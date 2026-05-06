@@ -56,6 +56,14 @@ jobs:
         if: always()
         run: node scripts/postman/summarize-newman.mjs newman-report.json >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Upload newman report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: newman-report
+          path: newman-report.json
+          if-no-files-found: error
+
       - name: Fail job on test failures
         if: steps.newman.outcome == 'failure'
         run: exit 1
