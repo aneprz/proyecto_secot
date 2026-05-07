@@ -209,11 +209,14 @@
               "",
               "pm.sendRequest({",
               "  url: `${pm.variables.get('baseUrl')}/seniors/${pm.variables.get('senior_id')}`,",
-              "  method: 'GET'",
+              "  method: 'GET',",
+              "  header: {",
+              "    Authorization: `Bearer ${pm.collectionVariables.get('access_token')}`",
+              "  }",
               "}, (err, res) => {",
               "  pm.test('después de hard delete devuelve 404', () => {",
-              "    pm.expect(err).to.equal(null);",
-              "    pm.expect(res.code).to.eql(404);",
+                "    pm.expect(err).to.equal(null);",
+                "    pm.expect(res.code).to.eql(404);",
               "  });",
               "});"
             ]
