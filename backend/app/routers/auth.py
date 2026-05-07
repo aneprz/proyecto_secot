@@ -51,6 +51,7 @@ def login(payload: LoginRequest):
             if verify_password(payload.password, settings.auth_password_hash):
                 token = create_access_token(subject=payload.username, extra_claims={"rol": "admin"})
                 return TokenResponse(access_token=token)
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Credenciales inválidas")
         except UnknownHashError:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -86,3 +87,8 @@ def login(payload: LoginRequest):
         # el login queda exclusivamente controlado por la tabla `usuario`.
         if _count_usuarios() > 0:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Credenciales inválidas")
+        # Tabla existe pero está vacía: no hay credenciales válidas salvo el bootstrap admin
+        # (que ya se ha manejado arriba).
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Credenciales inválidas")
+
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Credenciales inválidas")
