@@ -76,10 +76,7 @@ jobs:
           done
 
           # Minimal schema required for the Postman CRUD senior tests.
-          python -c "import os; import psycopg; from psycopg import errors; conn=psycopg.connect(os.environ['DATABASE_URL']); cur=conn.cursor(); cur.execute('create table if not exists senior (senior_id bigserial primary key, nombre varchar(120) not null, apellidos varchar(160) not null, email varchar(254), movil varchar(30), fecha_alta date, activo boolean not null default true);'); \
-try: cur.execute('alter table senior add constraint uq_senior_email unique (email);'); \
-except errors.DuplicateObject: pass; \
-conn.commit(); cur.close(); conn.close()"
+          python -c "import os; import psycopg; conn=psycopg.connect(os.environ['DATABASE_URL']); cur=conn.cursor(); cur.execute('create table if not exists senior (senior_id bigserial primary key, nombre varchar(120) not null, apellidos varchar(160) not null, email varchar(254), movil varchar(30), fecha_alta date, activo boolean not null default true);'); cur.execute(\"select 1 from pg_constraint where conname = 'uq_senior_email'\"); row=cur.fetchone(); 0 if row else cur.execute('alter table senior add constraint uq_senior_email unique (email);'); conn.commit(); cur.close(); conn.close()"
 
           # Create bcrypt hash for default Postman password: "admin".
           python -c "from passlib.context import CryptContext; pwd=CryptContext(schemes=['bcrypt']); print('AUTH_PASSWORD_HASH=' + pwd.hash('admin'))" >> "$GITHUB_ENV"
