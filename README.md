@@ -39,7 +39,7 @@ Changelog principal: `db/changelog/db.changelog-master.yaml`
 - Render (backend): define `DATABASE_URL` (Supabase Postgres) y `BACKEND_CORS_ORIGINS=https://<tu-app>.vercel.app`
 - Opcional (previews Vercel): `BACKEND_CORS_ORIGIN_REGEX=^https://.*\\.vercel\\.app$`
 
-## CRUD Senior
+## CRUD Senior 
 
 - API: `backend/app/routers/seniors.py`
 - UI: `frontend/src/ui/App.jsx`
