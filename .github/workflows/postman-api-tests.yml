@@ -68,13 +68,7 @@ jobs:
 
           # Wait for Postgres service health.
           for i in $(seq 1 30); do
-            python -c "import os,sys; import psycopg; \
-try: \
-  conn=psycopg.connect(os.environ['DATABASE_URL']); \
-  cur=conn.cursor(); cur.execute('select 1;'); cur.close(); conn.close(); \
-  sys.exit(0); \
-except Exception: \
-  sys.exit(1)"
+            python -c "import os; import psycopg; conn=psycopg.connect(os.environ['DATABASE_URL']); cur=conn.cursor(); cur.execute('select 1;'); cur.close(); conn.close()"
             if [ "$?" = "0" ]; then
               break
             fi
@@ -82,28 +76,7 @@ except Exception: \
           done
 
           # Minimal schema required for the Postman CRUD senior tests.
-          python -c "import os; import psycopg; schema_sql = \"\"\"\
-create table if not exists senior (\
-  senior_id bigserial primary key,\
-  nombre varchar(120) not null,\
-  apellidos varchar(160) not null,\
-  email varchar(254),\
-  movil varchar(30),\
-  fecha_alta date,\
-  activo boolean not null default true\
-);\
-do $$\
-begin\
-  if not exists (\
-    select 1 from pg_constraint where conname = 'uq_senior_email'\
-  ) then\
-    alter table senior add constraint uq_senior_email unique (email);\
-  end if;\
-end $$;\
-\"\"\"; \
-with psycopg.connect(os.environ['DATABASE_URL']) as conn: \
-  with conn.cursor() as cur: cur.execute(schema_sql); \
-  conn.commit()"
+          python -c "import os; import psycopg; schema_sql='create table if not exists senior (senior_id bigserial primary key, nombre varchar(120) not null, apellidos varchar(160) not null, email varchar(254), movil varchar(30), fecha_alta date, activo boolean not null default true);\\n' + \"do $$ begin if not exists (select 1 from pg_constraint where conname = 'uq_senior_email') then alter table senior add constraint uq_senior_email unique (email); end if; end $$;\"; conn=psycopg.connect(os.environ['DATABASE_URL']); cur=conn.cursor(); cur.execute(schema_sql); conn.commit(); cur.close(); conn.close()"
 
           # Create bcrypt hash for default Postman password: "admin".
           python -c "from passlib.context import CryptContext; pwd=CryptContext(schemes=['bcrypt']); print('AUTH_PASSWORD_HASH=' + pwd.hash('admin'))" >> "$GITHUB_ENV"
