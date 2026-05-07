@@ -11,13 +11,31 @@ jobs:
     name: Run Postman (Newman)
     runs-on: ubuntu-latest
     # Needed to load Environment-scoped Variables/Secrets (Settings → Environments → Production)
+    # If not set, the workflow runs self-contained against a local API + Postgres.
     environment: Production
     if: github.event_name != 'deployment_status' || github.event.deployment_status.state == 'success'
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
     env:
       # Allow configuration via GitHub Environment URL, repo Variables, or Secrets.
       BASE_URL: ${{ github.event.deployment_status.environment_url || vars.API_BASE_URL || secrets.API_BASE_URL }}
       AUTH_USER: ${{ vars.API_AUTH_USER || secrets.API_AUTH_USER }}
       AUTH_PASS: ${{ vars.API_AUTH_PASS || secrets.API_AUTH_PASS }}
+      # By default we run self-contained against a local API+Postgres (more deterministic for CI).
+      # Set RUN_REMOTE_TESTS=true to validate a deployed environment via BASE_URL.
+      RUN_REMOTE_TESTS: ${{ vars.RUN_REMOTE_TESTS || secrets.RUN_REMOTE_TESTS }}
       # Opt into Node.js 24 runtime for JavaScript actions ahead of the runner default switch (June 2nd, 2026).
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
@@ -27,8 +45,92 @@ jobs:
         with:
           node-version: 20
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - name: Install Newman
         run: npm i -g newman
+
+      - name: Start local API (unless RUN_REMOTE_TESTS=true)
+        if: env.RUN_REMOTE_TESTS != 'true'
+        shell: bash
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+          AUTH_SECRET_KEY: CI_CHANGE_ME
+          AUTH_USERNAME: admin
+          AUTH_ACCESS_TOKEN_EXPIRE_MINUTES: "480"
+        run: |
+          set -euo pipefail
+
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+          # Wait for Postgres service health.
+          for i in $(seq 1 30); do
+            python - <<'PY'
+import os, sys
+import psycopg
+try:
+    with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+        with conn.cursor() as cur:
+            cur.execute("select 1;")
+    sys.exit(0)
+except Exception:
+    sys.exit(1)
+PY
+            if [ "$?" = "0" ]; then
+              break
+            fi
+            sleep 2
+          done
+
+          # Minimal schema required for the Postman CRUD senior tests.
+          python - <<'PY'
+import os
+import psycopg
+
+schema_sql = """
+create table if not exists senior (
+  senior_id bigserial primary key,
+  nombre varchar(120) not null,
+  apellidos varchar(160) not null,
+  email varchar(254),
+  movil varchar(30),
+  fecha_alta date,
+  activo boolean not null default true
+);
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'uq_senior_email'
+  ) then
+    alter table senior add constraint uq_senior_email unique (email);
+  end if;
+end $$;
+"""
+
+with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+    with conn.cursor() as cur:
+        cur.execute(schema_sql)
+    conn.commit()
+PY
+
+          # Create bcrypt hash for default Postman password: "admin".
+          python - <<'PY' >> "$GITHUB_ENV"
+from passlib.context import CryptContext
+pwd = CryptContext(schemes=["bcrypt"])
+print("AUTH_PASSWORD_HASH=" + pwd.hash("admin"))
+PY
+
+          # Start FastAPI in background.
+          (cd backend && uvicorn app.main:app --host 127.0.0.1 --port 8000 --log-level warning) &
+
+          echo "NORMALIZED_BASE_URL=http://127.0.0.1:8000" >> "$GITHUB_ENV"
+          echo "BASE_URL=http://127.0.0.1:8000" >> "$GITHUB_ENV"
+          echo "BASE_URL=http://127.0.0.1:8000" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Sanity check /health
         shell: bash
@@ -38,7 +140,7 @@ jobs:
           if [ -z "${BASE_URL}" ]; then
             echo "## Postman API tests" >> "$GITHUB_STEP_SUMMARY"
             echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "- Missing \`BASE_URL\`. Set \`API_BASE_URL\` as a repo Variable/Secret, or run on a deployment_status event with environment_url." >> "$GITHUB_STEP_SUMMARY"
+            echo "- Missing \`BASE_URL\`. Either set \`API_BASE_URL\` as a repo Variable/Secret or rely on the self-contained local mode." >> "$GITHUB_STEP_SUMMARY"
             exit 2
           fi
 
@@ -49,7 +151,12 @@ jobs:
           fi
 
           echo "NORMALIZED_BASE_URL=${base}" >> "$GITHUB_ENV"
-          echo "BASE_URL=${base}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Target" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- RUN_REMOTE_TESTS=\`${RUN_REMOTE_TESTS:-}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- BASE_URL (raw)=\`${BASE_URL}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- BASE_URL (normalized)=\`${base}\`" >> "$GITHUB_STEP_SUMMARY"
 
           : > /tmp/health.json
           : > /tmp/health.headers
@@ -57,10 +164,10 @@ jobs:
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "### Health check" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Probing \`GET ${base}/health\` (up to 12 attempts, 10s interval)..." >> "$GITHUB_STEP_SUMMARY"
+          echo "- Probing \`GET ${base}/health\` (up to 30 attempts, 2s interval)..." >> "$GITHUB_STEP_SUMMARY"
 
           code=""
-          for i in $(seq 1 12); do
+          for i in $(seq 1 30); do
             : > /tmp/health.json
             : > /tmp/health.headers
             code="$(curl -sS -D /tmp/health.headers -o /tmp/health.json -w "%{http_code}" "${base}/health" || true)"
@@ -68,7 +175,7 @@ jobs:
             if [ "${code}" = "200" ]; then
               break
             fi
-            sleep 10
+            sleep 2
           done
 
           echo "- GET /health -> HTTP **${code}**" >> "$GITHUB_STEP_SUMMARY"

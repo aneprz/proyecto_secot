@@ -48,7 +48,9 @@ Changelog principal: `db/changelog/db.changelog-master.yaml`
 
 - Colección: `postman/SECOT-Bizkaia-API.postman_collection.json`
 - Ejecutar en local (requiere API levantada): `npx -y newman run postman/SECOT-Bizkaia-API.postman_collection.json -e postman/SECOT-Bizkaia-API.postman_environment.json --env-var baseUrl=http://localhost:8000 --env-var username=admin --env-var password=TU_PASSWORD`
-- CI: workflow `Postman API tests` (GitHub Actions). Define secretos:
-  - `API_BASE_URL` (URL del backend, p.ej. `https://<tu-servicio>.onrender.com`) como **Variable** o **Secret**
+- CI: workflow `Postman API tests` (GitHub Actions).
+  - Por defecto corre en modo **self-contained** (levanta Postgres + API local en el runner).
+  - Para validar un deploy real, define `RUN_REMOTE_TESTS=true` y además:
+    - `API_BASE_URL` (URL del backend, p.ej. `https://<tu-servicio>.onrender.com`) como **Variable** o **Secret**
   - `API_AUTH_USER` y `API_AUTH_PASS` como **Variables** o **Secrets** (credenciales válidas en ese entorno; si no, `/auth/login` devolverá 401 y el resto fallará)
   - Si las defines en `Settings → Environments → Production`, el job debe correr con `environment: Production` (ya está configurado en el workflow).
