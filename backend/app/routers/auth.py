@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 from psycopg.rows import dict_row
+from passlib.exc import UnknownHashError
 
 from ..auth import create_access_token, verify_password
 from ..db import get_connection
@@ -38,6 +39,24 @@ def _count_usuarios() -> int:
 
 @router.post("/login", response_model=TokenResponse)
 def login(payload: LoginRequest):
+    # Bootstrap admin por env (siempre permitido cuando está configurado).
+    # Esto evita que un `password_hash` inválido en BD bloquee el acceso (p.ej. datos legacy).
+    if payload.username == settings.auth_username:
+        if not settings.auth_password_hash:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Auth no configurado (falta AUTH_PASSWORD_HASH)",
+            )
+        try:
+            if verify_password(payload.password, settings.auth_password_hash):
+                token = create_access_token(subject=payload.username, extra_claims={"rol": "admin"})
+                return TokenResponse(access_token=token)
+        except UnknownHashError:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Auth no configurado (AUTH_PASSWORD_HASH inválido)",
+            )
+
     # Auth por BD (tabla `usuario`). Mantiene fallback a env para bootstrap/admin.
     if _usuario_table_exists():
         sql = """
@@ -49,7 +68,11 @@ def login(payload: LoginRequest):
             with conn.cursor() as cur:
                 cur.execute(sql, {"username": payload.username})
                 row = cur.fetchone()
-                if row and verify_password(payload.password, row["password_hash"]):
+                try:
+                    valid = bool(row) and verify_password(payload.password, row["password_hash"])
+                except UnknownHashError:
+                    valid = False
+                if valid:
                     cur.execute(
                         "update usuario set ultimo_login_en = now() where usuario_id = %(id)s;",
                         {"id": row["usuario_id"]},
@@ -63,18 +86,3 @@ def login(payload: LoginRequest):
         # el login queda exclusivamente controlado por la tabla `usuario`.
         if _count_usuarios() > 0:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Credenciales inválidas")
-
-    if payload.username != settings.auth_username:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Credenciales inválidas")
-
-    if not settings.auth_password_hash:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Auth no configurado (falta AUTH_PASSWORD_HASH)",
-        )
-
-    if not verify_password(payload.password, settings.auth_password_hash):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Credenciales inválidas")
-
-    token = create_access_token(subject=payload.username, extra_claims={"rol": "admin"})
-    return TokenResponse(access_token=token)
