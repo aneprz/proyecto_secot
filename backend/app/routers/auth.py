@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 from passlib.exc import UnknownHashError
-from pydantic import BaseModel
 from psycopg.rows import dict_row
+from pydantic import BaseModel
 
 from ..auth import create_access_token, verify_password
 from ..db import get_connection
