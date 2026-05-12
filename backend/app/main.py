@@ -3,10 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .db import get_connection
 from .routers.auth import router as auth_router
+from .routers.grupo_seniors import router as grupo_seniors_router
+from .routers.grupos import router as grupos_router
 from .routers.seniors import router as seniors_router
 from .routers.usuarios import router as usuarios_router
-from .routers.grupos import router as grupos_router
-from .routers.grupo_seniors import router as grupo_seniors_router
 from .settings import settings
 
 app = FastAPI(title="SECOT Bizkaia API", version="0.1.0")

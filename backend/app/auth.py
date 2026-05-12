@@ -93,7 +93,10 @@ def require_read(username: str = Depends(get_current_username)) -> str:
     """Requiere al menos rol 'read'"""
     role = _get_user_role(username)
     if ROLE_HIERARCHY.get(role, 0) < ROLE_HIERARCHY["read"]:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permisos insuficientes para lectura")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Permisos insuficientes para lectura",
+        )
     return username
 
 
@@ -101,7 +104,10 @@ def require_write(username: str = Depends(get_current_username)) -> str:
     """Requiere al menos rol 'write'"""
     role = _get_user_role(username)
     if ROLE_HIERARCHY.get(role, 0) < ROLE_HIERARCHY["write"]:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permisos insuficientes para escritura")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Permisos insuficientes para escritura",
+        )
     return username
 
 
@@ -109,5 +115,8 @@ def require_admin(username: str = Depends(get_current_username)) -> str:
     """Requiere rol 'admin'"""
     role = _get_user_role(username)
     if ROLE_HIERARCHY.get(role, 0) < ROLE_HIERARCHY["admin"]:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Requiere permisos de administrador")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Requiere permisos de administrador",
+        )
     return username

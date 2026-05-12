@@ -35,7 +35,11 @@ class _FakeCursor:
         params = params or {}
         normalized = " ".join(sql.split()).lower()
 
-        if normalized.startswith("select") and "from senior" in normalized and "where senior_id" not in normalized:
+        if (
+            normalized.startswith("select")
+            and "from senior" in normalized
+            and "where senior_id" not in normalized
+        ):
             # list_seniors
             rows = []
             for row in sorted(self._db.seniors.values(), key=lambda r: r.senior_id):
@@ -47,7 +51,11 @@ class _FakeCursor:
             self.rowcount = len(rows)
             return
 
-        if normalized.startswith("select") and "from senior" in normalized and "where senior_id" in normalized:
+        if (
+            normalized.startswith("select")
+            and "from senior" in normalized
+            and "where senior_id" in normalized
+        ):
             senior_id = int(params["senior_id"])
             row = self._db.seniors.get(senior_id)
             self._result_one = row.__dict__.copy() if row else None
@@ -144,7 +152,7 @@ class _FakeConn:
 
 
 def _fake_get_connection_factory(db: _FakeDb):
-    def _fake_get_connection(*, row_factory=None):  # noqa: ARG001
+    def _fake_get_connection(*, row_factory=None):
         return _FakeConn(db)
 
     return _fake_get_connection

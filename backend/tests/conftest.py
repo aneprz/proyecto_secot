@@ -1,13 +1,13 @@
 import os
 
-import pytest
-from fastapi.testclient import TestClient
-
 # Make JWT verification deterministic in tests (no DB required).
 os.environ.setdefault("AUTH_SECRET_KEY", "TEST_SECRET_KEY_CHANGE_ME")
 
-from app.auth import create_access_token  # noqa: E402
-from app.main import app  # noqa: E402
+import pytest
+from fastapi.testclient import TestClient
+
+from app.auth import create_access_token
+from app.main import app
 
 
 @pytest.fixture

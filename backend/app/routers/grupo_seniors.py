@@ -5,7 +5,11 @@ from ..auth import require_auth, require_write
 from ..db import get_connection
 from ..models import GrupoSeniorCreate, GrupoSeniorOut, GrupoSeniorUpdate
 
-router = APIRouter(prefix="/grupos-seniors", tags=["grupo-senior"], dependencies=[Depends(require_auth)])
+router = APIRouter(
+    prefix="/grupos-seniors",
+    tags=["grupo-senior"],
+    dependencies=[Depends(require_auth)],
+)
 
 
 def _row_to_grupo_senior(row) -> GrupoSeniorOut:
@@ -80,7 +84,12 @@ def get_grupos_by_senior(senior_id: int):
             return [dict(r) for r in cur.fetchall()]
 
 
-@router.post("", response_model=GrupoSeniorOut, status_code=201, dependencies=[Depends(require_write)])
+@router.post(
+    "",
+    response_model=GrupoSeniorOut,
+    status_code=201,
+    dependencies=[Depends(require_write)],
+)
 def create_grupo_senior(payload: GrupoSeniorCreate):
     """Asignar un senior a un grupo"""
     sql = """
@@ -106,12 +115,20 @@ def create_grupo_senior(payload: GrupoSeniorCreate):
         raise
 
 
-@router.patch("/{grupo_senior_id}", response_model=GrupoSeniorOut, dependencies=[Depends(require_write)])
+@router.patch(
+    "/{grupo_senior_id}",
+    response_model=GrupoSeniorOut,
+    dependencies=[Depends(require_write)],
+)
 def update_grupo_senior(grupo_senior_id: int, payload: GrupoSeniorUpdate):
     """Actualizar el rol de un senior en un grupo"""
     data = payload.model_dump(exclude_unset=True)
     if not data:
-        sql = "select grupo_senior_id, grupo_id, senior_id, rol_en_grupo, fecha_alta from grupo_senior where grupo_senior_id = %(id)s;"
+        sql = """
+            select grupo_senior_id, grupo_id, senior_id, rol_en_grupo, fecha_alta
+            from grupo_senior
+            where grupo_senior_id = %(id)s;
+        """
         with get_connection(row_factory=dict_row) as conn:
             with conn.cursor() as cur:
                 cur.execute(sql, {"id": grupo_senior_id})

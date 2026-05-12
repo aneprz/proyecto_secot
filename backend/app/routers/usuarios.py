@@ -68,7 +68,11 @@ def create_usuario(payload: UsuarioCreate):
                 return _row_to_usuario(row)
     except Exception as exc:
         message = str(exc)
-        if "uq_usuario_username" in message or "uq_usuario_email" in message or "duplicate key" in message:
+        if (
+            "uq_usuario_username" in message
+            or "uq_usuario_email" in message
+            or "duplicate key" in message
+        ):
             raise HTTPException(status_code=409, detail="Username o email ya existe")
         raise
 
