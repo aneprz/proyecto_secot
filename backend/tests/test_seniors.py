@@ -207,4 +207,3 @@ def test_seniors_crud(client: TestClient, auth_token: str, fake_db: _FakeDb):
     # After hard delete, GET returns 404
     res = client.get(f"/seniors/{senior_id}", headers=headers)
     assert res.status_code == 404, res.text
-

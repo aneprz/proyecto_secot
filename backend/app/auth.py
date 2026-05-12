@@ -14,9 +14,9 @@ ALGORITHM = "HS256"
 
 # Roles y sus permisos
 ROLE_HIERARCHY = {
-    "read": 1,      # Solo lectura
-    "write": 2,     # Lectura y escritura
-    "admin": 3,     # Administrador completo
+    "read": 1,  # Solo lectura
+    "write": 2,  # Lectura y escritura
+    "admin": 3,  # Administrador completo
 }
 
 
