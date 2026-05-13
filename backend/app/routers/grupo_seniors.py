@@ -1,14 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from psycopg.rows import dict_row
 
-from ..auth import require_auth, require_write
+from ..auth import require_read, require_write
 from ..db import get_connection
 from ..models import GrupoSeniorCreate, GrupoSeniorOut, GrupoSeniorUpdate
 
 router = APIRouter(
     prefix="/grupos-seniors",
     tags=["grupo-senior"],
-    dependencies=[Depends(require_auth)],
+    dependencies=[Depends(require_read)],
 )
 
 
@@ -71,7 +71,7 @@ def get_seniors_by_grupo(grupo_id: int):
 def get_grupos_by_senior(senior_id: int):
     """Obtener todos los grupos de un senior"""
     sql = """
-        select g.grupo_id, g.nombre, g.descripcion, g.activo, g.creado_en,
+        select g.grupo_id, g.nombre_grupo as nombre, g.descripcion, g.activo,
                gs.rol_en_grupo, gs.fecha_alta as fecha_asignacion
         from grupo_senior gs
         join grupo g on gs.grupo_id = g.grupo_id

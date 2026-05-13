@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from psycopg.rows import dict_row
 
-from ..auth import require_auth
+from ..auth import require_read, require_write
 from ..db import get_connection
 from ..models import GrupoCreate, GrupoOut, GrupoUpdate
 
-router = APIRouter(prefix="/grupos", tags=["grupos"], dependencies=[Depends(require_auth)])
+router = APIRouter(prefix="/grupos", tags=["grupos"], dependencies=[Depends(require_read)])
 
 
 def _row_to_grupo(row) -> GrupoOut:
@@ -20,7 +20,7 @@ def list_grupos(
 ):
     where = "" if include_inactive else "where activo = true"
     sql = f"""
-        select grupo_id, nombre, descripcion, activo, creado_en
+        select grupo_id, nombre_grupo as nombre, descripcion, activo
         from grupo
         {where}
         order by grupo_id asc
@@ -35,7 +35,7 @@ def list_grupos(
 @router.get("/{grupo_id}", response_model=GrupoOut)
 def get_grupo(grupo_id: int):
     sql = """
-        select grupo_id, nombre, descripcion, activo, creado_en
+        select grupo_id, nombre_grupo as nombre, descripcion, activo
         from grupo
         where grupo_id = %(grupo_id)s;
     """
@@ -49,11 +49,11 @@ def get_grupo(grupo_id: int):
 
 
 @router.post("", response_model=GrupoOut, status_code=201)
-def create_grupo(payload: GrupoCreate):
+def create_grupo(payload: GrupoCreate, _: str = Depends(require_write)):
     sql = """
-        insert into grupo (nombre, descripcion, activo)
+        insert into grupo (nombre_grupo, descripcion, activo)
         values (%(nombre)s, %(descripcion)s, %(activo)s)
-        returning grupo_id, nombre, descripcion, activo, creado_en;
+        returning grupo_id, nombre_grupo as nombre, descripcion, activo;
     """
     try:
         with get_connection(row_factory=dict_row) as conn:
@@ -70,7 +70,7 @@ def create_grupo(payload: GrupoCreate):
 
 
 @router.patch("/{grupo_id}", response_model=GrupoOut)
-def update_grupo(grupo_id: int, payload: GrupoUpdate):
+def update_grupo(grupo_id: int, payload: GrupoUpdate, _: str = Depends(require_write)):
     data = payload.model_dump(exclude_unset=True)
     if not data:
         return get_grupo(grupo_id)
@@ -78,7 +78,8 @@ def update_grupo(grupo_id: int, payload: GrupoUpdate):
     set_parts = []
     params = {"grupo_id": grupo_id}
     for key, value in data.items():
-        set_parts.append(f"{key} = %({key})s")
+        column = "nombre_grupo" if key == "nombre" else key
+        set_parts.append(f"{column} = %({key})s")
         params[key] = value
 
     set_sql = ", ".join(set_parts)
@@ -86,7 +87,7 @@ def update_grupo(grupo_id: int, payload: GrupoUpdate):
         update grupo
         set {set_sql}
         where grupo_id = %(grupo_id)s
-        returning grupo_id, nombre, descripcion, activo, creado_en;
+        returning grupo_id, nombre_grupo as nombre, descripcion, activo;
     """
 
     try:
@@ -108,7 +109,7 @@ def update_grupo(grupo_id: int, payload: GrupoUpdate):
 
 
 @router.delete("/{grupo_id}", status_code=204)
-def delete_grupo(grupo_id: int, hard: bool = False):
+def delete_grupo(grupo_id: int, hard: bool = False, _: str = Depends(require_write)):
     sql = (
         "delete from grupo where grupo_id = %(grupo_id)s;"
         if hard

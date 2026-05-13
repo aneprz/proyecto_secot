@@ -1,8 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from .db import get_connection
 from .routers.auth import router as auth_router
+from .routers.centros import router as centros_router
 from .routers.grupo_seniors import router as grupo_seniors_router
 from .routers.grupos import router as grupos_router
 from .routers.seniors import router as seniors_router
@@ -28,6 +30,21 @@ def health():
     return {"status": "ok"}
 
 
+@app.get("/debug/cors")
+def debug_cors():
+    # Endpoint de diagnóstico para confirmar qué config CORS está cargada en producción.
+    # No expone secretos; solo valores relacionados con CORS.
+    if not settings.debug_cors:
+        return JSONResponse(status_code=404, content={"detail": "Not found"})
+    return {
+        "allow_origins": settings.cors_allow_origins(),
+        "allow_origin_regex": settings.backend_cors_origin_regex,
+        "allow_credentials": True,
+        "allow_methods": ["*"],
+        "allow_headers": ["*"],
+    }
+
+
 @app.get("/db/ping")
 def db_ping():
     with get_connection() as conn:
@@ -42,3 +59,4 @@ app.include_router(auth_router)
 app.include_router(usuarios_router)
 app.include_router(grupos_router)
 app.include_router(grupo_seniors_router)
+app.include_router(centros_router)

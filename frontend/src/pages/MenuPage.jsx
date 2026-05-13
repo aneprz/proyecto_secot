@@ -66,6 +66,25 @@ export default function MenuPage({ onNavigate }) {
             </div>
           </div>
 
+          {/* Centros */}
+          <div
+            style={{
+              ...styles.menuCard,
+              borderTop: "4px solid #9b59b6",
+              ...(canAccess("GET") ? {} : styles.disabled),
+            }}
+            onClick={() => canAccess("GET") && onNavigate("centros")}
+          >
+            <div style={styles.cardIcon}>🏫</div>
+            <h3 style={styles.cardTitle}>Centros</h3>
+            <p style={styles.cardDesc}>
+              {canWrite() ? "Gestionar centros (ver, crear, editar)" : "Ver centros"}
+            </p>
+            <div style={styles.badge}>
+              {canWrite() ? "✏️ Escritura" : "👁️ Lectura"}
+            </div>
+          </div>
+
           {/* Usuarios (Solo Admin) */}
           {canAdmin() && (
             <div

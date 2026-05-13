@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from psycopg.rows import dict_row
 
-from ..auth import require_auth
+from ..auth import require_read, require_write
 from ..db import get_connection
 from ..models import SeniorCreate, SeniorOut, SeniorUpdate
 
-router = APIRouter(prefix="/seniors", tags=["seniors"], dependencies=[Depends(require_auth)])
+router = APIRouter(prefix="/seniors", tags=["seniors"], dependencies=[Depends(require_read)])
 
 
 def _row_to_senior(row) -> SeniorOut:
@@ -49,7 +49,7 @@ def get_senior(senior_id: int):
 
 
 @router.post("", response_model=SeniorOut, status_code=201)
-def create_senior(payload: SeniorCreate):
+def create_senior(payload: SeniorCreate, _: str = Depends(require_write)):
     sql = """
         insert into senior (nombre, apellidos, email, movil, fecha_alta, activo)
         values (%(nombre)s, %(apellidos)s, %(email)s, %(movil)s, %(fecha_alta)s, %(activo)s)
@@ -70,7 +70,7 @@ def create_senior(payload: SeniorCreate):
 
 
 @router.patch("/{senior_id}", response_model=SeniorOut)
-def update_senior(senior_id: int, payload: SeniorUpdate):
+def update_senior(senior_id: int, payload: SeniorUpdate, _: str = Depends(require_write)):
     data = payload.model_dump(exclude_unset=True)
     if not data:
         return get_senior(senior_id)
@@ -108,7 +108,7 @@ def update_senior(senior_id: int, payload: SeniorUpdate):
 
 
 @router.delete("/{senior_id}", status_code=204)
-def delete_senior(senior_id: int, hard: bool = False):
+def delete_senior(senior_id: int, hard: bool = False, _: str = Depends(require_write)):
     sql = (
         "delete from senior where senior_id = %(senior_id)s;"
         if hard

@@ -5,6 +5,7 @@ import LoginPage from "../pages/LoginPage.jsx";
 import MenuPage from "../pages/MenuPage.jsx";
 import SeniorsPage from "../pages/SeniorsPage.jsx";
 import GruposPage from "../pages/GruposPage.jsx";
+import CentrosPage from "../pages/CentrosPage.jsx";
 import UsuariosPage from "../pages/UsuariosPage.jsx";
 
 export default function App() {
@@ -40,6 +41,7 @@ export default function App() {
       <main style={styles.main}>
         {currentPage === "seniors" && <SeniorsPage onBack={goBack} />}
         {currentPage === "grupos" && <GruposPage onBack={goBack} />}
+        {currentPage === "centros" && <CentrosPage onBack={goBack} />}
         {currentPage === "usuarios" && <UsuariosPage onBack={goBack} />}
         {currentPage === "menu" && <MenuPage onNavigate={navigateTo} />}
       </main>

@@ -78,7 +78,9 @@ def _get_user_role(username: str) -> str:
                 cur.execute(sql, {"username": username})
                 row = cur.fetchone()
                 if row:
-                    return row.get("rol", "read")
+                    role = row.get("rol") or "read"
+                    # Compatibilidad con datos legacy (p.ej. "user").
+                    return role if role in ROLE_HIERARCHY else "read"
     except Exception:
         pass
     return "read"

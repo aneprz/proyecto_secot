@@ -74,7 +74,30 @@ class GrupoUpdate(BaseModel):
 
 class GrupoOut(GrupoBase):
     grupo_id: int
-    creado_en: datetime
+
+
+class CentroBase(BaseModel):
+    nombre: Annotated[str, Field(min_length=1, max_length=200)]
+    tipo: Annotated[str | None, Field(max_length=80)] = None
+    direccion: Annotated[str | None, Field(max_length=255)] = None
+    municipio: Annotated[str | None, Field(max_length=120)] = None
+    activo: bool = True
+
+
+class CentroCreate(CentroBase):
+    pass
+
+
+class CentroUpdate(BaseModel):
+    nombre: Annotated[str | None, Field(min_length=1, max_length=200)] = None
+    tipo: Annotated[str | None, Field(max_length=80)] = None
+    direccion: Annotated[str | None, Field(max_length=255)] = None
+    municipio: Annotated[str | None, Field(max_length=120)] = None
+    activo: bool | None = None
+
+
+class CentroOut(CentroBase):
+    centro_id: int
 
 
 class GrupoSeniorBase(BaseModel):
