@@ -15,8 +15,10 @@ export default function SeniorsPage({ onBack }) {
   const emptyForm = useMemo(
     () => ({
       nombre: "",
-      apellidos: "",
-      email: "",
+      apellido1: "",
+      apellido2: "",
+      email_personal: "",
+      email_secot: "",
       movil: "",
       fecha_alta: "",
       activo: true,
@@ -55,8 +57,10 @@ export default function SeniorsPage({ onBack }) {
     setEditingId(item.senior_id);
     setForm({
       nombre: item.nombre ?? "",
-      apellidos: item.apellidos ?? "",
-      email: item.email ?? "",
+      apellido1: item.apellido1 ?? "",
+      apellido2: item.apellido2 ?? "",
+      email_personal: item.email_personal ?? "",
+      email_secot: item.email_secot ?? "",
       movil: item.movil ?? "",
       fecha_alta: item.fecha_alta ?? "",
       activo: Boolean(item.activo),
@@ -75,8 +79,10 @@ export default function SeniorsPage({ onBack }) {
     try {
       const payload = {
         nombre: form.nombre.trim(),
-        apellidos: form.apellidos.trim(),
-        email: form.email.trim() || null,
+        apellido1: form.apellido1.trim(),
+        apellido2: form.apellido2.trim(),
+        email_personal: form.email_personal.trim() || null,
+        email_secot: form.email_secot.trim() || null,
         movil: form.movil.trim() || null,
         fecha_alta: form.fecha_alta || null,
         activo: Boolean(form.activo),
@@ -151,17 +157,38 @@ export default function SeniorsPage({ onBack }) {
           <input name="nombre" value={form.nombre} onChange={onChange} required />
         </div>
         <div style={{ display: "grid", gap: 6 }}>
-          <label>Apellidos</label>
+          <label>Apellido 1</label>
           <input
-            name="apellidos"
-            value={form.apellidos}
+            name="apellido1"
+            value={form.apellido1}
             onChange={onChange}
             required
           />
         </div>
         <div style={{ display: "grid", gap: 6 }}>
-          <label>Email</label>
-          <input name="email" value={form.email} onChange={onChange} />
+          <label>Apellido 2</label>
+          <input
+            name="apellido2"
+            value={form.apellido2}
+            onChange={onChange}
+            required
+          />
+        </div>
+        <div style={{ display: "grid", gap: 6 }}>
+          <label>Email personal</label>
+          <input
+            name="email_personal"
+            value={form.email_personal}
+            onChange={onChange}
+          />
+        </div>
+        <div style={{ display: "grid", gap: 6 }}>
+          <label>Email SECOT</label>
+          <input
+            name="email_secot"
+            value={form.email_secot}
+            onChange={onChange}
+          />
         </div>
         <div style={{ display: "grid", gap: 6 }}>
           <label>Móvil</label>
@@ -211,8 +238,10 @@ export default function SeniorsPage({ onBack }) {
           <tr style={{ textAlign: "left", borderBottom: "1px solid #ddd" }}>
             <th style={{ padding: "8px 6px" }}>ID</th>
             <th style={{ padding: "8px 6px" }}>Nombre</th>
-            <th style={{ padding: "8px 6px" }}>Apellidos</th>
-            <th style={{ padding: "8px 6px" }}>Email</th>
+            <th style={{ padding: "8px 6px" }}>Apellido 1</th>
+            <th style={{ padding: "8px 6px" }}>Apellido 2</th>
+            <th style={{ padding: "8px 6px" }}>Email personal</th>
+            <th style={{ padding: "8px 6px" }}>Email SECOT</th>
             <th style={{ padding: "8px 6px" }}>Activo</th>
             <th style={{ padding: "8px 6px" }}></th>
           </tr>
@@ -222,8 +251,10 @@ export default function SeniorsPage({ onBack }) {
             <tr key={it.senior_id} style={{ borderBottom: "1px solid #f0f0f0" }}>
               <td style={{ padding: "8px 6px" }}>{it.senior_id}</td>
               <td style={{ padding: "8px 6px" }}>{it.nombre}</td>
-              <td style={{ padding: "8px 6px" }}>{it.apellidos}</td>
-              <td style={{ padding: "8px 6px" }}>{it.email || ""}</td>
+              <td style={{ padding: "8px 6px" }}>{it.apellido1}</td>
+              <td style={{ padding: "8px 6px" }}>{it.apellido2}</td>
+              <td style={{ padding: "8px 6px" }}>{it.email_personal || ""}</td>
+              <td style={{ padding: "8px 6px" }}>{it.email_secot || ""}</td>
               <td style={{ padding: "8px 6px" }}>{it.activo ? "Sí" : "No"}</td>
               <td style={{ padding: "8px 6px", display: "flex", gap: 8 }}>
                 <button onClick={() => startEdit(it)} disabled={loading}>
@@ -237,7 +268,7 @@ export default function SeniorsPage({ onBack }) {
           ))}
           {items.length === 0 ? (
             <tr>
-              <td colSpan={6} style={{ padding: 10, color: "#666" }}>
+              <td colSpan={8} style={{ padding: 10, color: "#666" }}>
                 Sin datos
               </td>
             </tr>

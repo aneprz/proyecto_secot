@@ -54,7 +54,7 @@ def list_grupo_seniors(
 def get_seniors_by_grupo(grupo_id: int):
     """Obtener todos los seniors de un grupo"""
     sql = """
-        select s.senior_id, s.nombre, s.apellidos, s.email, s.movil, s.fecha_alta, s.activo,
+        select s.senior_id, s.nombre, s.apellido1, s.apellido2, s.email_personal, s.email_secot, s.movil, s.fecha_alta, s.activo,
                gs.rol_en_grupo, gs.fecha_alta as fecha_asignacion
         from grupo_senior gs
         join senior s on gs.senior_id = s.senior_id

@@ -6,8 +6,10 @@ from pydantic import BaseModel, EmailStr, Field
 
 class SeniorBase(BaseModel):
     nombre: Annotated[str, Field(min_length=1, max_length=120)]
-    apellidos: Annotated[str, Field(min_length=1, max_length=160)]
-    email: EmailStr | None = None
+    apellido1: Annotated[str, Field(min_length=1, max_length=80)]
+    apellido2: Annotated[str, Field(min_length=1, max_length=80)]
+    email_personal: EmailStr | None = None
+    email_secot: EmailStr | None = None
     movil: Annotated[str | None, Field(max_length=30)] = None
     fecha_alta: date | None = None
     activo: bool = True
@@ -19,8 +21,10 @@ class SeniorCreate(SeniorBase):
 
 class SeniorUpdate(BaseModel):
     nombre: Annotated[str | None, Field(min_length=1, max_length=120)] = None
-    apellidos: Annotated[str | None, Field(min_length=1, max_length=160)] = None
-    email: EmailStr | None = None
+    apellido1: Annotated[str | None, Field(min_length=1, max_length=80)] = None
+    apellido2: Annotated[str | None, Field(min_length=1, max_length=80)] = None
+    email_personal: EmailStr | None = None
+    email_secot: EmailStr | None = None
     movil: Annotated[str | None, Field(max_length=30)] = None
     fecha_alta: date | None = None
     activo: bool | None = None

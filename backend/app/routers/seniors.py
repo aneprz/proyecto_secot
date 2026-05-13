@@ -20,7 +20,7 @@ def list_seniors(
 ):
     where = "" if include_inactive else "where activo = true"
     sql = f"""
-        select senior_id, nombre, apellidos, email, movil, fecha_alta, activo
+        select senior_id, nombre, apellido1, apellido2, email_personal, email_secot, movil, fecha_alta, activo
         from senior
         {where}
         order by senior_id asc
@@ -35,7 +35,7 @@ def list_seniors(
 @router.get("/{senior_id}", response_model=SeniorOut)
 def get_senior(senior_id: int):
     sql = """
-        select senior_id, nombre, apellidos, email, movil, fecha_alta, activo
+        select senior_id, nombre, apellido1, apellido2, email_personal, email_secot, movil, fecha_alta, activo
         from senior
         where senior_id = %(senior_id)s;
     """
@@ -51,9 +51,9 @@ def get_senior(senior_id: int):
 @router.post("", response_model=SeniorOut, status_code=201)
 def create_senior(payload: SeniorCreate, _: str = Depends(require_write)):
     sql = """
-        insert into senior (nombre, apellidos, email, movil, fecha_alta, activo)
-        values (%(nombre)s, %(apellidos)s, %(email)s, %(movil)s, %(fecha_alta)s, %(activo)s)
-        returning senior_id, nombre, apellidos, email, movil, fecha_alta, activo;
+        insert into senior (nombre, apellido1, apellido2, email_personal, email_secot, movil, fecha_alta, activo)
+        values (%(nombre)s, %(apellido1)s, %(apellido2)s, %(email_personal)s, %(email_secot)s, %(movil)s, %(fecha_alta)s, %(activo)s)
+        returning senior_id, nombre, apellido1, apellido2, email_personal, email_secot, movil, fecha_alta, activo;
     """
     try:
         with get_connection(row_factory=dict_row) as conn:
@@ -64,7 +64,11 @@ def create_senior(payload: SeniorCreate, _: str = Depends(require_write)):
                 return _row_to_senior(row)
     except Exception as exc:
         message = str(exc)
-        if "uq_senior_email" in message or "duplicate key" in message:
+        if (
+            "uq_senior_email_personal" in message
+            or "uq_senior_email_secot" in message
+            or "duplicate key" in message
+        ):
             raise HTTPException(status_code=409, detail="Email ya existe")
         raise
 
@@ -86,7 +90,7 @@ def update_senior(senior_id: int, payload: SeniorUpdate, _: str = Depends(requir
         update senior
         set {set_sql}
         where senior_id = %(senior_id)s
-        returning senior_id, nombre, apellidos, email, movil, fecha_alta, activo;
+        returning senior_id, nombre, apellido1, apellido2, email_personal, email_secot, movil, fecha_alta, activo;
     """
 
     try:
@@ -102,7 +106,11 @@ def update_senior(senior_id: int, payload: SeniorUpdate, _: str = Depends(requir
         raise
     except Exception as exc:
         message = str(exc)
-        if "uq_senior_email" in message or "duplicate key" in message:
+        if (
+            "uq_senior_email_personal" in message
+            or "uq_senior_email_secot" in message
+            or "duplicate key" in message
+        ):
             raise HTTPException(status_code=409, detail="Email ya existe")
         raise
 

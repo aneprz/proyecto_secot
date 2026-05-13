@@ -7,3 +7,5 @@ databaseChangeLog:
       file: db/changelog/changes/003_usuario.yaml
   - include:
       file: db/changelog/changes/004_grupo_seniors.yaml
+  - include:
+      file: db/changelog/changes/005_senior_campos.yaml

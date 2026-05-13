@@ -1,0 +1,63 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-senior-campos-1
+      author: proyecto_secot
+      changes:
+        - dropUniqueConstraint:
+            tableName: senior
+            constraintName: uq_senior_email
+
+        - addColumn:
+            tableName: senior
+            columns:
+              - column:
+                  name: apellido1
+                  type: VARCHAR(80)
+              - column:
+                  name: apellido2
+                  type: VARCHAR(80)
+              - column:
+                  name: email_personal
+                  type: VARCHAR(254)
+              - column:
+                  name: email_secot
+                  type: VARCHAR(254)
+
+        - sql:
+            dbms: postgresql
+            sql: |
+              update senior
+              set
+                apellido1 = coalesce(nullif(trim(apellidos), ''), 'N/D'),
+                apellido2 = 'N/D',
+                email_personal = email
+              where apellido1 is null;
+
+        - addNotNullConstraint:
+            tableName: senior
+            columnName: apellido1
+            columnDataType: VARCHAR(80)
+
+        - addNotNullConstraint:
+            tableName: senior
+            columnName: apellido2
+            columnDataType: VARCHAR(80)
+
+        - dropColumn:
+            tableName: senior
+            columnName: apellidos
+
+        - dropColumn:
+            tableName: senior
+            columnName: email
+
+        - addUniqueConstraint:
+            tableName: senior
+            columnNames: email_personal
+            constraintName: uq_senior_email_personal
+
+        - addUniqueConstraint:
+            tableName: senior
+            columnNames: email_secot
+            constraintName: uq_senior_email_secot
+

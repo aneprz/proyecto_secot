@@ -11,8 +11,10 @@ from fastapi.testclient import TestClient
 class _SeniorRow:
     senior_id: int
     nombre: str
-    apellidos: str
-    email: str | None = None
+    apellido1: str
+    apellido2: str
+    email_personal: str | None = None
+    email_secot: str | None = None
     movil: str | None = None
     fecha_alta: date | None = None
     activo: bool = True
@@ -69,8 +71,10 @@ class _FakeCursor:
             row = _SeniorRow(
                 senior_id=senior_id,
                 nombre=params["nombre"],
-                apellidos=params["apellidos"],
-                email=params.get("email"),
+                apellido1=params["apellido1"],
+                apellido2=params["apellido2"],
+                email_personal=params.get("email_personal"),
+                email_secot=params.get("email_secot"),
                 movil=params.get("movil"),
                 fecha_alta=params.get("fecha_alta"),
                 activo=bool(params.get("activo", True)),
@@ -173,8 +177,10 @@ def test_seniors_crud(client: TestClient, auth_token: str, fake_db: _FakeDb):
     # Create
     payload = {
         "nombre": "Test",
-        "apellidos": "Senior",
-        "email": "test@example.com",
+        "apellido1": "Senior",
+        "apellido2": "Prueba",
+        "email_personal": "test@example.com",
+        "email_secot": "test@secot.example",
         "movil": "600000000",
         "fecha_alta": "2026-01-01",
         "activo": True,
@@ -188,7 +194,7 @@ def test_seniors_crud(client: TestClient, auth_token: str, fake_db: _FakeDb):
     # Read
     res = client.get(f"/seniors/{senior_id}", headers=headers)
     assert res.status_code == 200, res.text
-    assert res.json()["email"] == "test@example.com"
+    assert res.json()["email_personal"] == "test@example.com"
 
     # Update
     res = client.patch(f"/seniors/{senior_id}", json={"movil": "600000001"}, headers=headers)
