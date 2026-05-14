@@ -3,7 +3,7 @@ from psycopg.rows import dict_row
 
 from ..auth import require_read, require_write
 from ..db import get_connection
-from ..models import GrupoSeniorCreate, GrupoSeniorOut, GrupoSeniorUpdate
+from ..models import SeniorGrupoCreate, SeniorGrupoOut, SeniorGrupoUpdate
 
 router = APIRouter(
     prefix="/grupos-seniors",
@@ -12,14 +12,15 @@ router = APIRouter(
 )
 
 
-def _row_to_grupo_senior(row) -> GrupoSeniorOut:
-    return GrupoSeniorOut(**row)
+def _row_to_grupo_senior(row) -> SeniorGrupoOut:
+    return SeniorGrupoOut(**row)
 
 
-@router.get("", response_model=list[GrupoSeniorOut])
+@router.get("", response_model=list[SeniorGrupoOut])
 def list_grupo_seniors(
     grupo_id: int | None = None,
     senior_id: int | None = None,
+    include_inactive: bool = False,
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0),
 ):
@@ -35,13 +36,16 @@ def list_grupo_seniors(
         where_parts.append("gs.senior_id = %(senior_id)s")
         params["senior_id"] = senior_id
 
+    if not include_inactive:
+        where_parts.append("gs.activo = true")
+
     where_clause = "where " + " and ".join(where_parts) if where_parts else ""
 
     sql = f"""
-        select gs.grupo_senior_id, gs.grupo_id, gs.senior_id, gs.rol_en_grupo, gs.fecha_alta
-        from grupo_senior gs
+        select gs.senior_grupo_id, gs.senior_id, gs.grupo_id, gs.rol_en_grupo, gs.fecha_alta, gs.fecha_baja, gs.activo
+        from senior_grupo gs
         {where_clause}
-        order by gs.grupo_senior_id asc
+        order by gs.senior_grupo_id asc
         limit %(limit)s offset %(offset)s;
     """
     with get_connection(row_factory=dict_row) as conn:
@@ -55,10 +59,10 @@ def get_seniors_by_grupo(grupo_id: int):
     """Obtener todos los seniors de un grupo"""
     sql = """
         select s.senior_id, s.nombre, s.apellido1, s.apellido2, s.email_personal, s.email_secot, s.movil, s.fecha_alta, s.activo,
-               gs.rol_en_grupo, gs.fecha_alta as fecha_asignacion
-        from grupo_senior gs
+               gs.rol_en_grupo, gs.fecha_alta as fecha_asignacion, gs.fecha_baja, gs.activo as relacion_activa
+        from senior_grupo gs
         join senior s on gs.senior_id = s.senior_id
-        where gs.grupo_id = %(grupo_id)s and s.activo = true
+        where gs.grupo_id = %(grupo_id)s and s.activo = true and gs.activo = true
         order by s.senior_id asc;
     """
     with get_connection(row_factory=dict_row) as conn:
@@ -72,10 +76,10 @@ def get_grupos_by_senior(senior_id: int):
     """Obtener todos los grupos de un senior"""
     sql = """
         select g.grupo_id, g.nombre_grupo, g.descripcion, g.color_hex, g.canal_teams, g.responsable_senior_id, g.activo,
-               gs.rol_en_grupo, gs.fecha_alta as fecha_asignacion
-        from grupo_senior gs
+               gs.rol_en_grupo, gs.fecha_alta as fecha_asignacion, gs.fecha_baja, gs.activo as relacion_activa
+        from senior_grupo gs
         join grupo g on gs.grupo_id = g.grupo_id
-        where gs.senior_id = %(senior_id)s and g.activo = true
+        where gs.senior_id = %(senior_id)s and g.activo = true and gs.activo = true
         order by g.grupo_id asc;
     """
     with get_connection(row_factory=dict_row) as conn:
@@ -86,16 +90,23 @@ def get_grupos_by_senior(senior_id: int):
 
 @router.post(
     "",
-    response_model=GrupoSeniorOut,
+    response_model=SeniorGrupoOut,
     status_code=201,
     dependencies=[Depends(require_write)],
 )
-def create_grupo_senior(payload: GrupoSeniorCreate):
+def create_grupo_senior(payload: SeniorGrupoCreate):
     """Asignar un senior a un grupo"""
     sql = """
-        insert into grupo_senior (grupo_id, senior_id, rol_en_grupo)
-        values (%(grupo_id)s, %(senior_id)s, %(rol_en_grupo)s)
-        returning grupo_senior_id, grupo_id, senior_id, rol_en_grupo, fecha_alta;
+        insert into senior_grupo (senior_id, grupo_id, rol_en_grupo, fecha_alta, fecha_baja, activo)
+        values (
+            %(senior_id)s,
+            %(grupo_id)s,
+            %(rol_en_grupo)s,
+            coalesce(%(fecha_alta)s, current_date),
+            %(fecha_baja)s,
+            coalesce(%(activo)s, true)
+        )
+        returning senior_grupo_id, senior_id, grupo_id, rol_en_grupo, fecha_alta, fecha_baja, activo;
     """
     try:
         with get_connection(row_factory=dict_row) as conn:
@@ -106,49 +117,49 @@ def create_grupo_senior(payload: GrupoSeniorCreate):
                 return _row_to_grupo_senior(row)
     except Exception as exc:
         message = str(exc)
-        if "uq_grupo_senior_unique" in message or "duplicate key" in message:
+        if "uq_senior_grupo_unique" in message or "duplicate key" in message:
             raise HTTPException(status_code=409, detail="Este senior ya está en el grupo")
-        if "fk_grupo_senior_grupo" in message or "foreign key" in message.lower():
+        if "fk_senior_grupo_grupo" in message or "foreign key" in message.lower():
             raise HTTPException(status_code=404, detail="Grupo no encontrado")
-        if "fk_grupo_senior_senior" in message or "foreign key" in message.lower():
+        if "fk_senior_grupo_senior" in message or "foreign key" in message.lower():
             raise HTTPException(status_code=404, detail="Senior no encontrado")
         raise
 
 
 @router.patch(
-    "/{grupo_senior_id}",
-    response_model=GrupoSeniorOut,
+    "/{senior_grupo_id}",
+    response_model=SeniorGrupoOut,
     dependencies=[Depends(require_write)],
 )
-def update_grupo_senior(grupo_senior_id: int, payload: GrupoSeniorUpdate):
-    """Actualizar el rol de un senior en un grupo"""
+def update_grupo_senior(senior_grupo_id: int, payload: SeniorGrupoUpdate):
+    """Actualizar la relación senior-grupo"""
     data = payload.model_dump(exclude_unset=True)
     if not data:
         sql = """
-            select grupo_senior_id, grupo_id, senior_id, rol_en_grupo, fecha_alta
-            from grupo_senior
-            where grupo_senior_id = %(id)s;
+            select senior_grupo_id, senior_id, grupo_id, rol_en_grupo, fecha_alta, fecha_baja, activo
+            from senior_grupo
+            where senior_grupo_id = %(id)s;
         """
         with get_connection(row_factory=dict_row) as conn:
             with conn.cursor() as cur:
-                cur.execute(sql, {"id": grupo_senior_id})
+                cur.execute(sql, {"id": senior_grupo_id})
                 row = cur.fetchone()
                 if not row:
                     raise HTTPException(status_code=404, detail="Relación no encontrada")
                 return _row_to_grupo_senior(row)
 
     set_parts = []
-    params = {"grupo_senior_id": grupo_senior_id}
+    params = {"senior_grupo_id": senior_grupo_id}
     for key, value in data.items():
         set_parts.append(f"{key} = %({key})s")
         params[key] = value
 
     set_sql = ", ".join(set_parts)
     sql = f"""
-        update grupo_senior
+        update senior_grupo
         set {set_sql}
-        where grupo_senior_id = %(grupo_senior_id)s
-        returning grupo_senior_id, grupo_id, senior_id, rol_en_grupo, fecha_alta;
+        where senior_grupo_id = %(senior_grupo_id)s
+        returning senior_grupo_id, senior_id, grupo_id, rol_en_grupo, fecha_alta, fecha_baja, activo;
     """
     try:
         with get_connection(row_factory=dict_row) as conn:
@@ -163,13 +174,17 @@ def update_grupo_senior(grupo_senior_id: int, payload: GrupoSeniorUpdate):
         raise
 
 
-@router.delete("/{grupo_senior_id}", status_code=204, dependencies=[Depends(require_write)])
-def delete_grupo_senior(grupo_senior_id: int):
-    """Remover un senior de un grupo"""
-    sql = "delete from grupo_senior where grupo_senior_id = %(id)s;"
+@router.delete("/{senior_grupo_id}", status_code=204, dependencies=[Depends(require_write)])
+def delete_grupo_senior(senior_grupo_id: int, hard: bool = False):
+    """Desactivar (o borrar) una relación senior-grupo"""
+    sql = (
+        "delete from senior_grupo where senior_grupo_id = %(id)s;"
+        if hard
+        else "update senior_grupo set activo = false, fecha_baja = coalesce(fecha_baja, current_date) where senior_grupo_id = %(id)s;"
+    )
     with get_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute(sql, {"id": grupo_senior_id})
+            cur.execute(sql, {"id": senior_grupo_id})
             if cur.rowcount == 0:
                 raise HTTPException(status_code=404, detail="Relación no encontrada")
             conn.commit()

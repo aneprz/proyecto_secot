@@ -13,6 +13,10 @@ class _CentroRow:
     tipo: str | None = None
     direccion: str | None = None
     municipio: str | None = None
+    responsable_centro: str | None = None
+    email_responsable: str | None = None
+    telefono_responsable: str | None = None
+    observaciones: str | None = None
     activo: bool = True
 
 
@@ -65,6 +69,10 @@ class _FakeCursor:
                 tipo=params.get("tipo"),
                 direccion=params.get("direccion"),
                 municipio=params.get("municipio"),
+                responsable_centro=params.get("responsable_centro"),
+                email_responsable=params.get("email_responsable"),
+                telefono_responsable=params.get("telefono_responsable"),
+                observaciones=params.get("observaciones"),
                 activo=bool(params.get("activo", True)),
             )
             self._db.centros[centro_id] = row
@@ -167,6 +175,10 @@ def test_centros_crud(client: TestClient, auth_token: str, fake_db: _FakeDb):
         "tipo": "Residencia",
         "direccion": "Calle 1",
         "municipio": "Bilbao",
+        "responsable_centro": "Responsable 1",
+        "email_responsable": "responsable1@example.com",
+        "telefono_responsable": "600000000",
+        "observaciones": "Observación inicial",
         "activo": True,
     }
     res = client.post("/centros", json=payload, headers=headers)
@@ -191,4 +203,3 @@ def test_centros_crud(client: TestClient, auth_token: str, fake_db: _FakeDb):
     res = client.get("/centros", headers=headers)
     assert res.status_code == 200, res.text
     assert len(res.json()) == 0
-

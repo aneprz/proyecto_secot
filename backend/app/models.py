@@ -91,6 +91,10 @@ class CentroBase(BaseModel):
     tipo: Annotated[str | None, Field(max_length=80)] = None
     direccion: Annotated[str | None, Field(max_length=255)] = None
     municipio: Annotated[str | None, Field(max_length=120)] = None
+    responsable_centro: Annotated[str | None, Field(max_length=200)] = None
+    email_responsable: EmailStr | None = None
+    telefono_responsable: Annotated[str | None, Field(max_length=30)] = None
+    observaciones: Annotated[str | None, Field(max_length=2000)] = None
     activo: bool = True
 
 
@@ -103,6 +107,10 @@ class CentroUpdate(BaseModel):
     tipo: Annotated[str | None, Field(max_length=80)] = None
     direccion: Annotated[str | None, Field(max_length=255)] = None
     municipio: Annotated[str | None, Field(max_length=120)] = None
+    responsable_centro: Annotated[str | None, Field(max_length=200)] = None
+    email_responsable: EmailStr | None = None
+    telefono_responsable: Annotated[str | None, Field(max_length=30)] = None
+    observaciones: Annotated[str | None, Field(max_length=2000)] = None
     activo: bool | None = None
 
 
@@ -110,20 +118,25 @@ class CentroOut(CentroBase):
     centro_id: int
 
 
-class GrupoSeniorBase(BaseModel):
-    grupo_id: int
+class SeniorGrupoBase(BaseModel):
     senior_id: int
-    rol_en_grupo: str = "miembro"
+    grupo_id: int
+    rol_en_grupo: str | None = None
+    fecha_alta: date | None = None
+    fecha_baja: date | None = None
+    activo: bool = True
 
 
-class GrupoSeniorCreate(GrupoSeniorBase):
+class SeniorGrupoCreate(SeniorGrupoBase):
     pass
 
 
-class GrupoSeniorUpdate(BaseModel):
+class SeniorGrupoUpdate(BaseModel):
     rol_en_grupo: str | None = None
+    fecha_alta: date | None = None
+    fecha_baja: date | None = None
+    activo: bool | None = None
 
 
-class GrupoSeniorOut(GrupoSeniorBase):
-    grupo_senior_id: int
-    fecha_alta: datetime
+class SeniorGrupoOut(SeniorGrupoBase):
+    senior_grupo_id: int

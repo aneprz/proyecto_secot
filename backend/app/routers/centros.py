@@ -25,6 +25,10 @@ def list_centros(
                tipo_centro as tipo,
                direccion,
                municipio,
+               responsable_centro,
+               email_responsable,
+               telefono_responsable,
+               observaciones,
                activo
         from centro
         {where}
@@ -45,6 +49,10 @@ def get_centro(centro_id: int):
                tipo_centro as tipo,
                direccion,
                municipio,
+               responsable_centro,
+               email_responsable,
+               telefono_responsable,
+               observaciones,
                activo
         from centro
         where centro_id = %(centro_id)s;
@@ -61,13 +69,37 @@ def get_centro(centro_id: int):
 @router.post("", response_model=CentroOut, status_code=201)
 def create_centro(payload: CentroCreate, _: str = Depends(require_write)):
     sql = """
-        insert into centro (nombre_centro, tipo_centro, direccion, municipio, activo)
-        values (%(nombre)s, %(tipo)s, %(direccion)s, %(municipio)s, %(activo)s)
+        insert into centro (
+            nombre_centro,
+            tipo_centro,
+            direccion,
+            municipio,
+            responsable_centro,
+            email_responsable,
+            telefono_responsable,
+            observaciones,
+            activo
+        )
+        values (
+            %(nombre)s,
+            %(tipo)s,
+            %(direccion)s,
+            %(municipio)s,
+            %(responsable_centro)s,
+            %(email_responsable)s,
+            %(telefono_responsable)s,
+            %(observaciones)s,
+            %(activo)s
+        )
         returning centro_id,
                   nombre_centro as nombre,
                   tipo_centro as tipo,
                   direccion,
                   municipio,
+                  responsable_centro,
+                  email_responsable,
+                  telefono_responsable,
+                  observaciones,
                   activo;
     """
     with get_connection(row_factory=dict_row) as conn:
@@ -101,6 +133,10 @@ def update_centro(centro_id: int, payload: CentroUpdate, _: str = Depends(requir
                   tipo_centro as tipo,
                   direccion,
                   municipio,
+                  responsable_centro,
+                  email_responsable,
+                  telefono_responsable,
+                  observaciones,
                   activo;
     """
 
@@ -127,4 +163,3 @@ def delete_centro(centro_id: int, hard: bool = False, _: str = Depends(require_w
             if cur.rowcount == 0:
                 raise HTTPException(status_code=404, detail="Centro no encontrado")
             conn.commit()
-

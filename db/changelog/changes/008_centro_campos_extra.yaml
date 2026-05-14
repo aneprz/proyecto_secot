@@ -1,0 +1,20 @@
+databaseChangeLog:
+  - changeSet:
+      id: 008-centro-campos-extra
+      author: proyecto_secot
+      changes:
+        - addColumn:
+            tableName: centro
+            columns:
+              - column:
+                  name: responsable_centro
+                  type: VARCHAR(200)
+              - column:
+                  name: email_responsable
+                  type: VARCHAR(254)
+              - column:
+                  name: telefono_responsable
+                  type: VARCHAR(30)
+              - column:
+                  name: observaciones
+                  type: TEXT

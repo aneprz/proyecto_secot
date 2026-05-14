@@ -46,6 +46,7 @@ export async function createGrupoSenior({ grupoId, seniorId, rolEnGrupo = "miemb
       grupo_id: grupoId,
       senior_id: seniorId,
       rol_en_grupo: rolEnGrupo,
+      activo: true,
     }),
   });
 
@@ -56,11 +57,15 @@ export async function createGrupoSenior({ grupoId, seniorId, rolEnGrupo = "miemb
   return data;
 }
 
-export async function updateGrupoSenior(grupoSeniorId, { rolEnGrupo }) {
-  const res = await fetch(`${apiUrl}/grupos-seniors/${grupoSeniorId}`, {
+export async function updateGrupoSenior(seniorGrupoId, { rolEnGrupo, fechaBaja = null, activo = null }) {
+  const res = await fetch(`${apiUrl}/grupos-seniors/${seniorGrupoId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json", ...authHeader() },
-    body: JSON.stringify({ rol_en_grupo: rolEnGrupo }),
+    body: JSON.stringify({
+      rol_en_grupo: rolEnGrupo,
+      fecha_baja: fechaBaja,
+      activo,
+    }),
   });
 
   const data = await res.json();
@@ -70,8 +75,9 @@ export async function updateGrupoSenior(grupoSeniorId, { rolEnGrupo }) {
   return data;
 }
 
-export async function deleteGrupoSenior(grupoSeniorId) {
-  const res = await fetch(`${apiUrl}/grupos-seniors/${grupoSeniorId}`, {
+export async function deleteGrupoSenior(seniorGrupoId, { hard = false } = {}) {
+  const suffix = hard ? "?hard=true" : "";
+  const res = await fetch(`${apiUrl}/grupos-seniors/${seniorGrupoId}${suffix}`, {
     method: "DELETE",
     headers: authHeader(),
   });

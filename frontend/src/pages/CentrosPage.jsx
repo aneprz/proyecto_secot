@@ -13,6 +13,10 @@ export default function CentrosPage({ onBack }) {
       tipo: "",
       direccion: "",
       municipio: "",
+      responsable_centro: "",
+      email_responsable: "",
+      telefono_responsable: "",
+      observaciones: "",
       activo: true,
     }),
     [],
@@ -52,6 +56,10 @@ export default function CentrosPage({ onBack }) {
       tipo: item.tipo ?? "",
       direccion: item.direccion ?? "",
       municipio: item.municipio ?? "",
+      responsable_centro: item.responsable_centro ?? "",
+      email_responsable: item.email_responsable ?? "",
+      telefono_responsable: item.telefono_responsable ?? "",
+      observaciones: item.observaciones ?? "",
       activo: Boolean(item.activo),
     });
   }
@@ -71,6 +79,10 @@ export default function CentrosPage({ onBack }) {
         tipo: form.tipo.trim() || null,
         direccion: form.direccion.trim() || null,
         municipio: form.municipio.trim() || null,
+        responsable_centro: form.responsable_centro.trim() || null,
+        email_responsable: form.email_responsable.trim() || null,
+        telefono_responsable: form.telefono_responsable.trim() || null,
+        observaciones: form.observaciones.trim() || null,
         activo: Boolean(form.activo),
       };
       if (editingId) {
@@ -154,6 +166,45 @@ export default function CentrosPage({ onBack }) {
           <label>Municipio</label>
           <input name="municipio" value={form.municipio} onChange={onChange} />
         </div>
+        <div style={{ display: "grid", gap: 6 }}>
+          <label>Responsable</label>
+          <input
+            name="responsable_centro"
+            value={form.responsable_centro}
+            onChange={onChange}
+            placeholder="Nombre del responsable"
+          />
+        </div>
+        <div style={{ display: "grid", gap: 6 }}>
+          <label>Email responsable</label>
+          <input
+            type="email"
+            name="email_responsable"
+            value={form.email_responsable}
+            onChange={onChange}
+            placeholder="email@dominio.com"
+          />
+        </div>
+        <div style={{ display: "grid", gap: 6 }}>
+          <label>Teléfono responsable</label>
+          <input
+            name="telefono_responsable"
+            value={form.telefono_responsable}
+            onChange={onChange}
+            placeholder="Teléfono"
+          />
+        </div>
+        <div style={{ display: "grid", gap: 6 }}>
+          <label>Observaciones</label>
+          <textarea
+            name="observaciones"
+            value={form.observaciones}
+            onChange={onChange}
+            rows={3}
+            style={{ resize: "vertical" }}
+            placeholder="Notas / comentarios"
+          />
+        </div>
         <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <input type="checkbox" name="activo" checked={form.activo} onChange={onChange} />
           Activo
@@ -177,7 +228,7 @@ export default function CentrosPage({ onBack }) {
           width: "100%",
           borderCollapse: "collapse",
           marginTop: 10,
-          maxWidth: 980,
+          maxWidth: 1200,
         }}
       >
         <thead>
@@ -185,7 +236,12 @@ export default function CentrosPage({ onBack }) {
             <th style={{ padding: "8px 6px" }}>ID</th>
             <th style={{ padding: "8px 6px" }}>Nombre</th>
             <th style={{ padding: "8px 6px" }}>Tipo</th>
+            <th style={{ padding: "8px 6px" }}>Dirección</th>
             <th style={{ padding: "8px 6px" }}>Municipio</th>
+            <th style={{ padding: "8px 6px" }}>Responsable</th>
+            <th style={{ padding: "8px 6px" }}>Email</th>
+            <th style={{ padding: "8px 6px" }}>Teléfono</th>
+            <th style={{ padding: "8px 6px" }}>Observaciones</th>
             <th style={{ padding: "8px 6px" }}>Activo</th>
             <th style={{ padding: "8px 6px" }}></th>
           </tr>
@@ -196,7 +252,12 @@ export default function CentrosPage({ onBack }) {
               <td style={{ padding: "8px 6px" }}>{it.centro_id}</td>
               <td style={{ padding: "8px 6px" }}>{it.nombre}</td>
               <td style={{ padding: "8px 6px" }}>{it.tipo || ""}</td>
+              <td style={{ padding: "8px 6px" }}>{it.direccion || ""}</td>
               <td style={{ padding: "8px 6px" }}>{it.municipio || ""}</td>
+              <td style={{ padding: "8px 6px" }}>{it.responsable_centro || ""}</td>
+              <td style={{ padding: "8px 6px" }}>{it.email_responsable || ""}</td>
+              <td style={{ padding: "8px 6px" }}>{it.telefono_responsable || ""}</td>
+              <td style={{ padding: "8px 6px" }}>{it.observaciones || ""}</td>
               <td style={{ padding: "8px 6px" }}>{it.activo ? "Sí" : "No"}</td>
               <td style={{ padding: "8px 6px", display: "flex", gap: 8 }}>
                 <button onClick={() => startEdit(it)} disabled={loading}>
@@ -210,7 +271,7 @@ export default function CentrosPage({ onBack }) {
           ))}
           {items.length === 0 ? (
             <tr>
-              <td colSpan={6} style={{ padding: 10, color: "#666" }}>
+              <td colSpan={11} style={{ padding: 10, color: "#666" }}>
                 Sin datos
               </td>
             </tr>
@@ -220,4 +281,3 @@ export default function CentrosPage({ onBack }) {
     </div>
   );
 }
-
