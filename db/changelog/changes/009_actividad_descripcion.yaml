@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: 009-actividad-descripcion
+      author: proyecto_secot
+      changes:
+        - addColumn:
+            tableName: actividad
+            columns:
+              - column:
+                  name: descripcion
+                  type: TEXT
+

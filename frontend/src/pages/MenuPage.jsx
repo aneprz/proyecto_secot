@@ -85,6 +85,25 @@ export default function MenuPage({ onNavigate }) {
             </div>
           </div>
 
+          {/* Actividades */}
+          <div
+            style={{
+              ...styles.menuCard,
+              borderTop: "4px solid #f39c12",
+              ...(canAccess("GET") ? {} : styles.disabled),
+            }}
+            onClick={() => canAccess("GET") && onNavigate("actividades")}
+          >
+            <div style={styles.cardIcon}>📌</div>
+            <h3 style={styles.cardTitle}>Actividades</h3>
+            <p style={styles.cardDesc}>
+              {canWrite() ? "Gestionar actividades (ver, crear, editar)" : "Ver actividades"}
+            </p>
+            <div style={styles.badge}>
+              {canWrite() ? "✏️ Escritura" : "👁️ Lectura"}
+            </div>
+          </div>
+
           {/* Usuarios (Solo Admin) */}
           {canAdmin() && (
             <div

@@ -140,3 +140,37 @@ class SeniorGrupoUpdate(BaseModel):
 
 class SeniorGrupoOut(SeniorGrupoBase):
     senior_grupo_id: int
+
+
+class ActividadBase(BaseModel):
+    grupo_id: int
+    centro_id: int
+    titulo_actividad: Annotated[str, Field(min_length=1, max_length=200)]
+    descripcion: str | None = None
+    tipo_actividad: Annotated[str | None, Field(max_length=80)] = None
+    senior_responsable_actividad_id: int | None = None
+    estado_actividad: Annotated[str | None, Field(max_length=60)] = None
+    fecha_inicio_prevista: date | None = None
+    fecha_fin_prevista: date | None = None
+    activo: bool = True
+
+
+class ActividadCreate(ActividadBase):
+    pass
+
+
+class ActividadUpdate(BaseModel):
+    grupo_id: int | None = None
+    centro_id: int | None = None
+    titulo_actividad: Annotated[str | None, Field(min_length=1, max_length=200)] = None
+    descripcion: str | None = None
+    tipo_actividad: Annotated[str | None, Field(max_length=80)] = None
+    senior_responsable_actividad_id: int | None = None
+    estado_actividad: Annotated[str | None, Field(max_length=60)] = None
+    fecha_inicio_prevista: date | None = None
+    fecha_fin_prevista: date | None = None
+    activo: bool | None = None
+
+
+class ActividadOut(ActividadBase):
+    actividad_id: int

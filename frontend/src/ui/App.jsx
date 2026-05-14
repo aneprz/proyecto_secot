@@ -7,6 +7,7 @@ import SeniorsPage from "../pages/SeniorsPage.jsx";
 import GruposPage from "../pages/GruposPage.jsx";
 import CentrosPage from "../pages/CentrosPage.jsx";
 import UsuariosPage from "../pages/UsuariosPage.jsx";
+import ActividadesPage from "../pages/ActividadesPage.jsx";
 
 export default function App() {
   const [token, setToken] = useState(() => getAccessToken());
@@ -42,6 +43,7 @@ export default function App() {
         {currentPage === "seniors" && <SeniorsPage onBack={goBack} />}
         {currentPage === "grupos" && <GruposPage onBack={goBack} />}
         {currentPage === "centros" && <CentrosPage onBack={goBack} />}
+        {currentPage === "actividades" && <ActividadesPage onBack={goBack} />}
         {currentPage === "usuarios" && <UsuariosPage onBack={goBack} />}
         {currentPage === "menu" && <MenuPage onNavigate={navigateTo} />}
       </main>

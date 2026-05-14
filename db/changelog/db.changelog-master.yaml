@@ -13,3 +13,5 @@ databaseChangeLog:
       file: db/changelog/changes/005_senior_campos.yaml
   - include:
       file: db/changelog/changes/008_centro_campos_extra.yaml
+  - include:
+      file: db/changelog/changes/009_actividad_descripcion.yaml
