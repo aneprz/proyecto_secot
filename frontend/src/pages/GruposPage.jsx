@@ -5,12 +5,18 @@ import {
   listGrupos,
   updateGrupo,
 } from "../api/grupos.js";
+import { listSeniors } from "../api/seniors.js";
 
 export default function GruposPage({ onBack }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [items, setItems] = useState([]);
   const [includeInactive, setIncludeInactive] = useState(false);
+  const [seniors, setSeniors] = useState([]);
+
+  function isValidHexColor(value) {
+    return typeof value === "string" && /^#[0-9a-fA-F]{6}$/.test(value.trim());
+  }
 
   const emptyForm = useMemo(
     () => ({
@@ -32,6 +38,8 @@ export default function GruposPage({ onBack }) {
     try {
       const data = await listGrupos({ includeInactive });
       setItems(data);
+      const seniorsData = await listSeniors({ includeInactive: false });
+      setSeniors(seniorsData);
     } catch (e) {
       setError(e?.message || String(e));
     } finally {
@@ -170,23 +178,47 @@ export default function GruposPage({ onBack }) {
           />
         </div>
         <div style={{ display: "grid", gap: 6 }}>
-          <label>ColorHex</label>
-          <input name="color_hex" value={form.color_hex} onChange={onChange} placeholder="#RRGGBB" />
+          <label>Color</label>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <input
+              type="color"
+              value={isValidHexColor(form.color_hex) ? form.color_hex.trim() : "#000000"}
+              onChange={(e) => setForm((prev) => ({ ...prev, color_hex: e.target.value }))}
+              aria-label="Selector de color"
+              title="Elegir color"
+            />
+            <input
+              name="color_hex"
+              value={form.color_hex}
+              onChange={onChange}
+              placeholder="#RRGGBB"
+              style={{ flex: 1 }}
+            />
+          </div>
         </div>
         <div style={{ display: "grid", gap: 6 }}>
           <label>CanalTeams</label>
-          <input name="canal_teams" value={form.canal_teams} onChange={onChange} />
+          <input
+            name="canal_teams"
+            value={form.canal_teams}
+            onChange={onChange}
+            placeholder="Nombre o enlace del canal"
+          />
         </div>
         <div style={{ display: "grid", gap: 6 }}>
-          <label>ResponsableSeniorId</label>
-          <input
+          <label>Responsable</label>
+          <select
             name="responsable_senior_id"
             value={form.responsable_senior_id}
             onChange={onChange}
-            inputMode="numeric"
-            pattern="\\d*"
-            placeholder="(opcional)"
-          />
+          >
+            <option value="">(Sin responsable)</option>
+            {seniors.map((s) => (
+              <option key={s.senior_id} value={String(s.senior_id)}>
+                #{s.senior_id} — {s.nombre} {s.apellido1} {s.apellido2}
+              </option>
+            ))}
+          </select>
         </div>
         <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <input
@@ -237,7 +269,22 @@ export default function GruposPage({ onBack }) {
               <td style={{ padding: "8px 6px" }}>{it.grupo_id}</td>
               <td style={{ padding: "8px 6px" }}>{it.nombre_grupo}</td>
               <td style={{ padding: "8px 6px" }}>{it.descripcion || ""}</td>
-              <td style={{ padding: "8px 6px" }}>{it.color_hex || ""}</td>
+              <td style={{ padding: "8px 6px" }}>
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <span
+                    style={{
+                      width: 14,
+                      height: 14,
+                      borderRadius: 4,
+                      border: "1px solid #ddd",
+                      background: isValidHexColor(it.color_hex) ? it.color_hex : "transparent",
+                      display: "inline-block",
+                    }}
+                    title={it.color_hex || ""}
+                  />
+                  <span>{it.color_hex || ""}</span>
+                </div>
+              </td>
               <td style={{ padding: "8px 6px" }}>{it.canal_teams || ""}</td>
               <td style={{ padding: "8px 6px" }}>{it.responsable_senior_id ?? ""}</td>
               <td style={{ padding: "8px 6px" }}>{it.activo ? "Sí" : "No"}</td>
