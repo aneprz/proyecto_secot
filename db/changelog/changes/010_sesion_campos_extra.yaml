@@ -1,0 +1,27 @@
+databaseChangeLog:
+  - changeSet:
+      id: 010-sesion-campos-extra
+      author: proyecto_secot
+      changes:
+        - addColumn:
+            tableName: sesion
+            columns:
+              - column:
+                  name: duracion_horas
+                  type: NUMERIC(5,2)
+              - column:
+                  name: titulo_sesion
+                  type: VARCHAR(200)
+              - column:
+                  name: ubicacion
+                  type: VARCHAR(255)
+              - column:
+                  name: observaciones
+                  type: TEXT
+              - column:
+                  name: es_visible_calendario
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+

@@ -174,3 +174,69 @@ class ActividadUpdate(BaseModel):
 
 class ActividadOut(ActividadBase):
     actividad_id: int
+
+
+class ActividadSeniorBase(BaseModel):
+    actividad_id: int
+    senior_id: int
+    rol_en_actividad: Annotated[str | None, Field(max_length=80)] = None
+    fecha_alta: date | None = None
+    fecha_baja: date | None = None
+    activo: bool = True
+
+
+class ActividadSeniorCreate(ActividadSeniorBase):
+    pass
+
+
+class ActividadSeniorUpdate(BaseModel):
+    actividad_id: int | None = None
+    senior_id: int | None = None
+    rol_en_actividad: Annotated[str | None, Field(max_length=80)] = None
+    fecha_alta: date | None = None
+    fecha_baja: date | None = None
+    activo: bool | None = None
+
+
+class ActividadSeniorOut(ActividadSeniorBase):
+    actividad_senior_id: int
+
+
+class SesionBase(BaseModel):
+    actividad_id: int
+    grupo_id: int
+    centro_id: int
+    fecha: date
+    hora_inicio: str | None = None
+    hora_fin: str | None = None
+    duracion_horas: float | None = None
+    titulo_sesion: Annotated[str | None, Field(max_length=200)] = None
+    ubicacion: Annotated[str | None, Field(max_length=255)] = None
+    estado_sesion: Annotated[str | None, Field(max_length=60)] = None
+    observaciones: str | None = None
+    es_visible_calendario: bool = True
+    activo: bool = True
+
+
+class SesionCreate(SesionBase):
+    pass
+
+
+class SesionUpdate(BaseModel):
+    actividad_id: int | None = None
+    grupo_id: int | None = None
+    centro_id: int | None = None
+    fecha: date | None = None
+    hora_inicio: str | None = None
+    hora_fin: str | None = None
+    duracion_horas: float | None = None
+    titulo_sesion: Annotated[str | None, Field(max_length=200)] = None
+    ubicacion: Annotated[str | None, Field(max_length=255)] = None
+    estado_sesion: Annotated[str | None, Field(max_length=60)] = None
+    observaciones: str | None = None
+    es_visible_calendario: bool | None = None
+    activo: bool | None = None
+
+
+class SesionOut(SesionBase):
+    sesion_id: int

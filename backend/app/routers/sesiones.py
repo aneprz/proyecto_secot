@@ -1,0 +1,147 @@
+from fastapi import APIRouter, Depends, HTTPException, Query
+from psycopg.rows import dict_row
+
+from ..auth import require_read, require_write
+from ..db import get_connection
+from ..models import SesionCreate, SesionOut, SesionUpdate
+
+router = APIRouter(prefix="/sesiones", tags=["sesiones"], dependencies=[Depends(require_read)])
+
+
+def _row_to_sesion(row) -> SesionOut:
+    return SesionOut(**row)
+
+
+@router.get("", response_model=list[SesionOut])
+def list_sesiones(
+    actividad_id: int | None = None,
+    grupo_id: int | None = None,
+    centro_id: int | None = None,
+    include_inactive: bool = False,
+    limit: int = Query(100, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+):
+    where_parts = []
+    params = {"limit": limit, "offset": offset}
+
+    if actividad_id is not None:
+        where_parts.append("s.actividad_id = %(actividad_id)s")
+        params["actividad_id"] = actividad_id
+    if grupo_id is not None:
+        where_parts.append("s.grupo_id = %(grupo_id)s")
+        params["grupo_id"] = grupo_id
+    if centro_id is not None:
+        where_parts.append("s.centro_id = %(centro_id)s")
+        params["centro_id"] = centro_id
+    if not include_inactive:
+        where_parts.append("s.activo = true")
+
+    where_clause = "where " + " and ".join(where_parts) if where_parts else ""
+
+    sql = f"""
+        select
+            s.sesion_id, s.actividad_id, s.grupo_id, s.centro_id, s.fecha, s.hora_inicio, s.hora_fin,
+            s.duracion_horas, s.titulo_sesion, s.ubicacion, s.estado_sesion, s.observaciones,
+            s.es_visible_calendario, s.activo
+        from sesion s
+        {where_clause}
+        order by s.sesion_id asc
+        limit %(limit)s offset %(offset)s;
+    """
+    with get_connection(row_factory=dict_row) as conn:
+        with conn.cursor() as cur:
+            cur.execute(sql, params)
+            return [_row_to_sesion(r) for r in cur.fetchall()]
+
+
+@router.get("/{sesion_id}", response_model=SesionOut)
+def get_sesion(sesion_id: int):
+    sql = """
+        select
+            sesion_id, actividad_id, grupo_id, centro_id, fecha, hora_inicio, hora_fin,
+            duracion_horas, titulo_sesion, ubicacion, estado_sesion, observaciones,
+            es_visible_calendario, activo
+        from sesion
+        where sesion_id = %(sesion_id)s;
+    """
+    with get_connection(row_factory=dict_row) as conn:
+        with conn.cursor() as cur:
+            cur.execute(sql, {"sesion_id": sesion_id})
+            row = cur.fetchone()
+            if not row:
+                raise HTTPException(status_code=404, detail="Sesión no encontrada")
+            return _row_to_sesion(row)
+
+
+@router.post("", response_model=SesionOut, status_code=201)
+def create_sesion(payload: SesionCreate, _: str = Depends(require_write)):
+    sql = """
+        insert into sesion (
+            actividad_id, grupo_id, centro_id, fecha, hora_inicio, hora_fin,
+            duracion_horas, titulo_sesion, ubicacion, estado_sesion, observaciones,
+            es_visible_calendario, activo
+        )
+        values (
+            %(actividad_id)s, %(grupo_id)s, %(centro_id)s, %(fecha)s, %(hora_inicio)s, %(hora_fin)s,
+            %(duracion_horas)s, %(titulo_sesion)s, %(ubicacion)s, %(estado_sesion)s, %(observaciones)s,
+            %(es_visible_calendario)s, %(activo)s
+        )
+        returning
+            sesion_id, actividad_id, grupo_id, centro_id, fecha, hora_inicio, hora_fin,
+            duracion_horas, titulo_sesion, ubicacion, estado_sesion, observaciones,
+            es_visible_calendario, activo;
+    """
+    with get_connection(row_factory=dict_row) as conn:
+        with conn.cursor() as cur:
+            cur.execute(sql, payload.model_dump())
+            row = cur.fetchone()
+            conn.commit()
+            return _row_to_sesion(row)
+
+
+@router.patch("/{sesion_id}", response_model=SesionOut)
+def update_sesion(sesion_id: int, payload: SesionUpdate, _: str = Depends(require_write)):
+    data = payload.model_dump(exclude_unset=True)
+    if not data:
+        return get_sesion(sesion_id)
+
+    set_parts = []
+    params = {"sesion_id": sesion_id}
+    for key, value in data.items():
+        set_parts.append(f"{key} = %({key})s")
+        params[key] = value
+
+    set_sql = ", ".join(set_parts)
+    sql = f"""
+        update sesion
+        set {set_sql}
+        where sesion_id = %(sesion_id)s
+        returning
+            sesion_id, actividad_id, grupo_id, centro_id, fecha, hora_inicio, hora_fin,
+            duracion_horas, titulo_sesion, ubicacion, estado_sesion, observaciones,
+            es_visible_calendario, activo;
+    """
+    with get_connection(row_factory=dict_row) as conn:
+        with conn.cursor() as cur:
+            cur.execute(sql, params)
+            row = cur.fetchone()
+            if not row:
+                raise HTTPException(status_code=404, detail="Sesión no encontrada")
+            conn.commit()
+            return _row_to_sesion(row)
+
+
+@router.delete("/{sesion_id}", status_code=204)
+def delete_sesion(sesion_id: int, hard: bool = False, _: str = Depends(require_write)):
+    sql = (
+        "delete from sesion where sesion_id = %(sesion_id)s;"
+        if hard
+        else "update sesion set activo = false where sesion_id = %(sesion_id)s;"
+    )
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(sql, {"sesion_id": sesion_id})
+            if cur.rowcount == 0:
+                raise HTTPException(status_code=404, detail="Sesión no encontrada")
+            conn.commit()
+
