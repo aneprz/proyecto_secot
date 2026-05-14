@@ -1,0 +1,15 @@
+databaseChangeLog:
+  - changeSet:
+      id: 006-grupo-campos-extra
+      author: proyecto_secot
+      changes:
+        - addColumn:
+            tableName: grupo
+            columns:
+              - column:
+                  name: canal_teams
+                  type: VARCHAR(255)
+        - addUniqueConstraint:
+            tableName: grupo
+            columnNames: nombre_grupo
+            constraintName: uq_grupo_nombre_grupo

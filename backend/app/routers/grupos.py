@@ -20,7 +20,7 @@ def list_grupos(
 ):
     where = "" if include_inactive else "where activo = true"
     sql = f"""
-        select grupo_id, nombre_grupo as nombre, descripcion, activo
+        select grupo_id, nombre_grupo, descripcion, color_hex, canal_teams, responsable_senior_id, activo
         from grupo
         {where}
         order by grupo_id asc
@@ -35,7 +35,7 @@ def list_grupos(
 @router.get("/{grupo_id}", response_model=GrupoOut)
 def get_grupo(grupo_id: int):
     sql = """
-        select grupo_id, nombre_grupo as nombre, descripcion, activo
+        select grupo_id, nombre_grupo, descripcion, color_hex, canal_teams, responsable_senior_id, activo
         from grupo
         where grupo_id = %(grupo_id)s;
     """
@@ -51,9 +51,9 @@ def get_grupo(grupo_id: int):
 @router.post("", response_model=GrupoOut, status_code=201)
 def create_grupo(payload: GrupoCreate, _: str = Depends(require_write)):
     sql = """
-        insert into grupo (nombre_grupo, descripcion, activo)
-        values (%(nombre)s, %(descripcion)s, %(activo)s)
-        returning grupo_id, nombre_grupo as nombre, descripcion, activo;
+        insert into grupo (nombre_grupo, descripcion, color_hex, canal_teams, responsable_senior_id, activo)
+        values (%(nombre_grupo)s, %(descripcion)s, %(color_hex)s, %(canal_teams)s, %(responsable_senior_id)s, %(activo)s)
+        returning grupo_id, nombre_grupo, descripcion, color_hex, canal_teams, responsable_senior_id, activo;
     """
     try:
         with get_connection(row_factory=dict_row) as conn:
@@ -64,7 +64,7 @@ def create_grupo(payload: GrupoCreate, _: str = Depends(require_write)):
                 return _row_to_grupo(row)
     except Exception as exc:
         message = str(exc)
-        if "uq_grupo_nombre" in message or "duplicate key" in message:
+        if "uq_grupo_nombre_grupo" in message or "duplicate key" in message:
             raise HTTPException(status_code=409, detail="Nombre ya existe")
         raise
 
@@ -78,8 +78,7 @@ def update_grupo(grupo_id: int, payload: GrupoUpdate, _: str = Depends(require_w
     set_parts = []
     params = {"grupo_id": grupo_id}
     for key, value in data.items():
-        column = "nombre_grupo" if key == "nombre" else key
-        set_parts.append(f"{column} = %({key})s")
+        set_parts.append(f"{key} = %({key})s")
         params[key] = value
 
     set_sql = ", ".join(set_parts)
@@ -87,7 +86,7 @@ def update_grupo(grupo_id: int, payload: GrupoUpdate, _: str = Depends(require_w
         update grupo
         set {set_sql}
         where grupo_id = %(grupo_id)s
-        returning grupo_id, nombre_grupo as nombre, descripcion, activo;
+        returning grupo_id, nombre_grupo, descripcion, color_hex, canal_teams, responsable_senior_id, activo;
     """
 
     try:
@@ -103,7 +102,7 @@ def update_grupo(grupo_id: int, payload: GrupoUpdate, _: str = Depends(require_w
         raise
     except Exception as exc:
         message = str(exc)
-        if "uq_grupo_nombre" in message or "duplicate key" in message:
+        if "uq_grupo_nombre_grupo" in message or "duplicate key" in message:
             raise HTTPException(status_code=409, detail="Nombre ya existe")
         raise
 

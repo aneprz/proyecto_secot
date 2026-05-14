@@ -61,8 +61,11 @@ class UsuarioOut(UsuarioBase):
 
 
 class GrupoBase(BaseModel):
-    nombre: Annotated[str, Field(min_length=1, max_length=120)]
+    nombre_grupo: Annotated[str, Field(min_length=1, max_length=160)]
     descripcion: str | None = None
+    color_hex: Annotated[str | None, Field(max_length=7)] = None
+    canal_teams: Annotated[str | None, Field(max_length=255)] = None
+    responsable_senior_id: int | None = None
     activo: bool = True
 
 
@@ -71,8 +74,11 @@ class GrupoCreate(GrupoBase):
 
 
 class GrupoUpdate(BaseModel):
-    nombre: Annotated[str | None, Field(min_length=1, max_length=120)] = None
+    nombre_grupo: Annotated[str | None, Field(min_length=1, max_length=160)] = None
     descripcion: str | None = None
+    color_hex: Annotated[str | None, Field(max_length=7)] = None
+    canal_teams: Annotated[str | None, Field(max_length=255)] = None
+    responsable_senior_id: int | None = None
     activo: bool | None = None
 
 

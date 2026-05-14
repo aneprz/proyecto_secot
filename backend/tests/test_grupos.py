@@ -9,8 +9,11 @@ from fastapi.testclient import TestClient
 @dataclass
 class _GrupoRow:
     grupo_id: int
-    nombre: str
+    nombre_grupo: str
     descripcion: str | None = None
+    color_hex: str | None = None
+    canal_teams: str | None = None
+    responsable_senior_id: int | None = None
     activo: bool = True
 
 
@@ -43,8 +46,11 @@ class _FakeCursor:
                 rows.append(
                     {
                         "grupo_id": row.grupo_id,
-                        "nombre": row.nombre,
+                        "nombre_grupo": row.nombre_grupo,
                         "descripcion": row.descripcion,
+                        "color_hex": row.color_hex,
+                        "canal_teams": row.canal_teams,
+                        "responsable_senior_id": row.responsable_senior_id,
                         "activo": row.activo,
                     }
                 )
@@ -59,8 +65,11 @@ class _FakeCursor:
             self._result_one = (
                 {
                     "grupo_id": row.grupo_id,
-                    "nombre": row.nombre,
+                    "nombre_grupo": row.nombre_grupo,
                     "descripcion": row.descripcion,
+                    "color_hex": row.color_hex,
+                    "canal_teams": row.canal_teams,
+                    "responsable_senior_id": row.responsable_senior_id,
                     "activo": row.activo,
                 }
                 if row
@@ -75,15 +84,21 @@ class _FakeCursor:
             self._db.next_id += 1
             row = _GrupoRow(
                 grupo_id=grupo_id,
-                nombre=params["nombre"],
+                nombre_grupo=params["nombre_grupo"],
                 descripcion=params.get("descripcion"),
+                color_hex=params.get("color_hex"),
+                canal_teams=params.get("canal_teams"),
+                responsable_senior_id=params.get("responsable_senior_id"),
                 activo=bool(params.get("activo", True)),
             )
             self._db.grupos[grupo_id] = row
             self._result_one = {
                 "grupo_id": row.grupo_id,
-                "nombre": row.nombre,
+                "nombre_grupo": row.nombre_grupo,
                 "descripcion": row.descripcion,
+                "color_hex": row.color_hex,
+                "canal_teams": row.canal_teams,
+                "responsable_senior_id": row.responsable_senior_id,
                 "activo": row.activo,
             }
             self._result_all = []
@@ -103,8 +118,11 @@ class _FakeCursor:
                 setattr(row, key, value)
             self._result_one = {
                 "grupo_id": row.grupo_id,
-                "nombre": row.nombre,
+                "nombre_grupo": row.nombre_grupo,
                 "descripcion": row.descripcion,
+                "color_hex": row.color_hex,
+                "canal_teams": row.canal_teams,
+                "responsable_senior_id": row.responsable_senior_id,
                 "activo": row.activo,
             }
             self.rowcount = 1
@@ -184,14 +202,14 @@ def fake_db(monkeypatch):
 def test_grupos_crud(client: TestClient, auth_token: str, fake_db: _FakeDb):
     headers = {"Authorization": f"Bearer {auth_token}"}
 
-    payload = {"nombre": "Grupo A", "descripcion": "Desc", "activo": True}
+    payload = {"nombre_grupo": "Grupo A", "descripcion": "Desc", "activo": True}
     res = client.post("/grupos", json=payload, headers=headers)
     assert res.status_code == 201, res.text
     grupo_id = res.json()["grupo_id"]
 
     res = client.get(f"/grupos/{grupo_id}", headers=headers)
     assert res.status_code == 200, res.text
-    assert res.json()["nombre"] == "Grupo A"
+    assert res.json()["nombre_grupo"] == "Grupo A"
 
     res = client.patch(f"/grupos/{grupo_id}", json={"descripcion": "X"}, headers=headers)
     assert res.status_code == 200, res.text
@@ -208,4 +226,3 @@ def test_grupos_crud(client: TestClient, auth_token: str, fake_db: _FakeDb):
     res = client.get("/grupos", headers=headers)
     assert res.status_code == 200, res.text
     assert len(res.json()) == 0
-

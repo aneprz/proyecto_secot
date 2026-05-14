@@ -71,7 +71,7 @@ def get_seniors_by_grupo(grupo_id: int):
 def get_grupos_by_senior(senior_id: int):
     """Obtener todos los grupos de un senior"""
     sql = """
-        select g.grupo_id, g.nombre_grupo as nombre, g.descripcion, g.activo,
+        select g.grupo_id, g.nombre_grupo, g.descripcion, g.color_hex, g.canal_teams, g.responsable_senior_id, g.activo,
                gs.rol_en_grupo, gs.fecha_alta as fecha_asignacion
         from grupo_senior gs
         join grupo g on gs.grupo_id = g.grupo_id

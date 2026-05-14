@@ -19,8 +19,9 @@ cors_kwargs = {
     "allow_methods": ["*"],
     "allow_headers": ["*"],
 }
-if settings.backend_cors_origin_regex:
-    cors_kwargs["allow_origin_regex"] = settings.backend_cors_origin_regex
+origin_regexes = settings.cors_allow_origin_regexes()
+if origin_regexes:
+    cors_kwargs["allow_origin_regex"] = "|".join(f"(?:{r})" for r in origin_regexes)
 
 app.add_middleware(CORSMiddleware, **cors_kwargs)
 
@@ -38,7 +39,7 @@ def debug_cors():
         return JSONResponse(status_code=404, content={"detail": "Not found"})
     return {
         "allow_origins": settings.cors_allow_origins(),
-        "allow_origin_regex": settings.backend_cors_origin_regex,
+        "allow_origin_regex": cors_kwargs.get("allow_origin_regex"),
         "allow_credentials": True,
         "allow_methods": ["*"],
         "allow_headers": ["*"],

@@ -12,10 +12,14 @@ class Settings(BaseSettings):
     # En Render / producción, define `BACKEND_CORS_ORIGINS` como CSV o JSON:
     # - CSV:  https://mi-app.vercel.app,https://otro.com
     # - JSON: ["https://mi-app.vercel.app","https://otro.com"]
-    backend_cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
+    backend_cors_origins: str = (
+        "http://localhost:5173,http://127.0.0.1:5173,https://proyecto-secot.vercel.app"
+    )
     # Útil para Vercel previews y despliegues (p.ej. ^https://.*\\.vercel\\.app$)
     # Si quieres restringirlo más, define BACKEND_CORS_ORIGIN_REGEX en producción.
     backend_cors_origin_regex: str | None = r"^https://.*\.vercel\.app$"
+    # Permite también el dominio de Render (útil para pruebas/preview del propio backend).
+    backend_cors_origin_regex_render: str | None = r"^https://.*\.onrender\.com$"
 
     supabase_db_host: str | None = None
     supabase_db_port: int = 5432
@@ -78,6 +82,14 @@ class Settings(BaseSettings):
             if origin:
                 normalized.append(origin)
         return normalized
+
+    def cors_allow_origin_regexes(self) -> list[str]:
+        regexes: list[str] = []
+        if self.backend_cors_origin_regex:
+            regexes.append(self.backend_cors_origin_regex)
+        if self.backend_cors_origin_regex_render:
+            regexes.append(self.backend_cors_origin_regex_render)
+        return regexes
 
     def build_database_url(self) -> str | None:
         if self.database_url:
