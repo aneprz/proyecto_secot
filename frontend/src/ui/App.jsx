@@ -8,7 +8,6 @@ import GruposPage from "../pages/GruposPage.jsx";
 import CentrosPage from "../pages/CentrosPage.jsx";
 import UsuariosPage from "../pages/UsuariosPage.jsx";
 import ActividadesPage from "../pages/ActividadesPage.jsx";
-import ActividadSeniorsPage from "../pages/ActividadSeniorsPage.jsx";
 import SesionesPage from "../pages/SesionesPage.jsx";
 
 export default function App() {
@@ -46,7 +45,6 @@ export default function App() {
         {currentPage === "grupos" && <GruposPage onBack={goBack} />}
         {currentPage === "centros" && <CentrosPage onBack={goBack} />}
         {currentPage === "actividades" && <ActividadesPage onBack={goBack} />}
-        {currentPage === "actividad_seniors" && <ActividadSeniorsPage onBack={goBack} />}
         {currentPage === "sesiones" && <SesionesPage onBack={goBack} />}
         {currentPage === "usuarios" && <UsuariosPage onBack={goBack} />}
         {currentPage === "menu" && <MenuPage onNavigate={navigateTo} />}

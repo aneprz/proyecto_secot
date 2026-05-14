@@ -104,25 +104,6 @@ export default function MenuPage({ onNavigate }) {
             </div>
           </div>
 
-          {/* Actividad/Senior */}
-          <div
-            style={{
-              ...styles.menuCard,
-              borderTop: "4px solid #16a085",
-              ...(canAccess("GET") ? {} : styles.disabled),
-            }}
-            onClick={() => canAccess("GET") && onNavigate("actividad_seniors")}
-          >
-            <div style={styles.cardIcon}>🧩</div>
-            <h3 style={styles.cardTitle}>Actividad/Senior</h3>
-            <p style={styles.cardDesc}>
-              {canWrite() ? "Asignar seniors a actividades" : "Ver asignaciones"}
-            </p>
-            <div style={styles.badge}>
-              {canWrite() ? "✏️ Escritura" : "👁️ Lectura"}
-            </div>
-          </div>
-
           {/* Sesiones */}
           <div
             style={{

@@ -5,6 +5,12 @@ import {
   listActividades,
   updateActividad,
 } from "../api/actividades.js";
+import {
+  createActividadSenior,
+  deleteActividadSenior,
+  listActividadSeniors,
+  updateActividadSenior,
+} from "../api/actividadSeniors.js";
 import { listCentros } from "../api/centros.js";
 import { listGrupos } from "../api/grupos.js";
 import { listSeniors } from "../api/seniors.js";
@@ -17,6 +23,8 @@ export default function ActividadesPage({ onBack }) {
   const [grupos, setGrupos] = useState([]);
   const [centros, setCentros] = useState([]);
   const [seniors, setSeniors] = useState([]);
+  const [assignments, setAssignments] = useState([]);
+  const [assignmentsIncludeInactive, setAssignmentsIncludeInactive] = useState(false);
 
   const emptyForm = useMemo(
     () => ({
@@ -36,6 +44,19 @@ export default function ActividadesPage({ onBack }) {
 
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
+
+  const emptyAssignmentForm = useMemo(
+    () => ({
+      senior_id: "",
+      rol_en_actividad: "",
+      fecha_alta: "",
+      fecha_baja: "",
+      activo: true,
+    }),
+    [],
+  );
+  const [assignmentForm, setAssignmentForm] = useState(emptyAssignmentForm);
+  const [editingAssignmentId, setEditingAssignmentId] = useState(null);
 
   async function refresh() {
     setLoading(true);
@@ -58,13 +79,42 @@ export default function ActividadesPage({ onBack }) {
     }
   }
 
+  async function refreshAssignments(actividadId) {
+    if (!actividadId) {
+      setAssignments([]);
+      return;
+    }
+    try {
+      const rows = await listActividadSeniors({
+        actividadId,
+        includeInactive: assignmentsIncludeInactive,
+      });
+      setAssignments(rows);
+    } catch (e) {
+      setError(e?.message || String(e));
+    }
+  }
+
   useEffect(() => {
     refresh();
   }, [includeInactive]);
 
+  useEffect(() => {
+    if (!editingId) return;
+    refreshAssignments(editingId);
+  }, [editingId, assignmentsIncludeInactive]);
+
   function onChange(e) {
     const { name, type, value, checked } = e.target;
     setForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  }
+
+  function onAssignmentChange(e) {
+    const { name, type, value, checked } = e.target;
+    setAssignmentForm((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
@@ -88,11 +138,16 @@ export default function ActividadesPage({ onBack }) {
       fecha_fin_prevista: item.fecha_fin_prevista ?? "",
       activo: Boolean(item.activo),
     });
+    setEditingAssignmentId(null);
+    setAssignmentForm(emptyAssignmentForm);
   }
 
   function cancelEdit() {
     setEditingId(null);
     setForm(emptyForm);
+    setAssignments([]);
+    setEditingAssignmentId(null);
+    setAssignmentForm(emptyAssignmentForm);
   }
 
   async function onSubmit(e) {
@@ -134,6 +189,70 @@ export default function ActividadesPage({ onBack }) {
       await refresh();
     } catch (e2) {
       setError(e2?.message || String(e2));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function startEditAssignment(row) {
+    setEditingAssignmentId(row.actividad_senior_id);
+    setAssignmentForm({
+      senior_id: String(row.senior_id ?? ""),
+      rol_en_actividad: row.rol_en_actividad ?? "",
+      fecha_alta: row.fecha_alta ?? "",
+      fecha_baja: row.fecha_baja ?? "",
+      activo: Boolean(row.activo),
+    });
+  }
+
+  function cancelEditAssignment() {
+    setEditingAssignmentId(null);
+    setAssignmentForm(emptyAssignmentForm);
+  }
+
+  async function onSubmitAssignment(e) {
+    e.preventDefault();
+    if (!editingId) return;
+
+    setLoading(true);
+    setError("");
+    try {
+      const payload = {
+        actividad_id: editingId,
+        senior_id: Number(assignmentForm.senior_id),
+        rol_en_actividad: assignmentForm.rol_en_actividad.trim() || null,
+        fecha_alta: assignmentForm.fecha_alta || null,
+        fecha_baja: assignmentForm.fecha_baja || null,
+        activo: Boolean(assignmentForm.activo),
+      };
+
+      if (!payload.senior_id || Number.isNaN(payload.senior_id)) {
+        throw new Error("Selecciona un senior");
+      }
+
+      if (editingAssignmentId) {
+        await updateActividadSenior(editingAssignmentId, payload);
+      } else {
+        await createActividadSenior(payload);
+      }
+      cancelEditAssignment();
+      await refreshAssignments(editingId);
+    } catch (e2) {
+      setError(e2?.message || String(e2));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function onDeleteAssignment(row) {
+    if (!confirm(`¿Desactivar asignación #${row.actividad_senior_id}?`)) return;
+    setLoading(true);
+    setError("");
+    try {
+      await deleteActividadSenior(row.actividad_senior_id);
+      await refreshAssignments(editingId);
+    } catch (e) {
+      setError(e?.message || String(e));
     } finally {
       setLoading(false);
     }
@@ -308,6 +427,154 @@ export default function ActividadesPage({ onBack }) {
 
         {error && <div style={styles.error}>Error: {error}</div>}
       </div>
+
+      {editingId && (
+        <div style={styles.card}>
+          <div style={styles.listHeader}>
+            <h2 style={styles.sectionTitle}>Seniors en la actividad</h2>
+            <label style={styles.inlineLabel}>
+              <input
+                type="checkbox"
+                checked={assignmentsIncludeInactive}
+                onChange={(e) => setAssignmentsIncludeInactive(e.target.checked)}
+              />{" "}
+              Incluir inactivas
+            </label>
+          </div>
+
+          <form onSubmit={onSubmitAssignment} style={styles.form}>
+            <div style={styles.grid}>
+              <div style={styles.field}>
+                <label>Senior</label>
+                <select
+                  name="senior_id"
+                  value={assignmentForm.senior_id}
+                  onChange={onAssignmentChange}
+                  required
+                >
+                  <option value="">-- Selecciona --</option>
+                  {seniors.map((s) => (
+                    <option key={s.senior_id} value={s.senior_id}>
+                      #{s.senior_id} - {renderSeniorLabel(s)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={styles.field}>
+                <label>Rol</label>
+                <input
+                  name="rol_en_actividad"
+                  value={assignmentForm.rol_en_actividad}
+                  onChange={onAssignmentChange}
+                  maxLength={80}
+                  placeholder="Opcional"
+                />
+              </div>
+
+              <div style={styles.field}>
+                <label>Fecha alta</label>
+                <input
+                  type="date"
+                  name="fecha_alta"
+                  value={assignmentForm.fecha_alta}
+                  onChange={onAssignmentChange}
+                />
+              </div>
+
+              <div style={styles.field}>
+                <label>Fecha baja</label>
+                <input
+                  type="date"
+                  name="fecha_baja"
+                  value={assignmentForm.fecha_baja}
+                  onChange={onAssignmentChange}
+                />
+              </div>
+
+              <div style={styles.fieldCheck}>
+                <label>
+                  <input
+                    type="checkbox"
+                    name="activo"
+                    checked={assignmentForm.activo}
+                    onChange={onAssignmentChange}
+                  />{" "}
+                  Activo
+                </label>
+              </div>
+            </div>
+
+            <div style={styles.actions}>
+              <button type="submit" disabled={loading} style={styles.primaryBtn}>
+                {editingAssignmentId ? "Guardar asignación" : "Añadir senior"}
+              </button>
+              {editingAssignmentId && (
+                <button
+                  type="button"
+                  onClick={cancelEditAssignment}
+                  disabled={loading}
+                  style={styles.secondaryBtn}
+                >
+                  Cancelar
+                </button>
+              )}
+            </div>
+          </form>
+
+          {!loading && assignments.length === 0 && <div style={styles.muted}>No hay seniors asignados</div>}
+          {assignments.length > 0 && (
+            <div style={{ overflowX: "auto" }}>
+              <table style={styles.table}>
+                <thead>
+                  <tr>
+                    <th style={styles.th}>ID</th>
+                    <th style={styles.th}>Senior</th>
+                    <th style={styles.th}>Rol</th>
+                    <th style={styles.th}>Alta</th>
+                    <th style={styles.th}>Baja</th>
+                    <th style={styles.th}>Activo</th>
+                    <th style={styles.th}>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {assignments.map((row) => {
+                    const s = seniorById.get(row.senior_id);
+                    return (
+                      <tr key={row.actividad_senior_id}>
+                        <td style={styles.td}>#{row.actividad_senior_id}</td>
+                        <td style={styles.td}>
+                          #{row.senior_id} {s ? `- ${renderSeniorLabel(s)}` : ""}
+                        </td>
+                        <td style={styles.td}>{row.rol_en_actividad || ""}</td>
+                        <td style={styles.td}>{row.fecha_alta || ""}</td>
+                        <td style={styles.td}>{row.fecha_baja || ""}</td>
+                        <td style={styles.td}>{row.activo ? "Sí" : "No"}</td>
+                        <td style={styles.td}>
+                          <button
+                            style={styles.linkBtn}
+                            onClick={() => startEditAssignment(row)}
+                            disabled={loading}
+                          >
+                            Editar
+                          </button>
+                          <button
+                            style={styles.dangerBtn}
+                            onClick={() => onDeleteAssignment(row)}
+                            disabled={loading}
+                          >
+                            Desactivar
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
 
       <div style={styles.card}>
         <div style={styles.listHeader}>
@@ -527,4 +794,3 @@ const styles = {
     cursor: "pointer",
   },
 };
-
