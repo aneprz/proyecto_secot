@@ -76,7 +76,7 @@ jobs:
           done
 
           # Minimal schema required for the Postman CRUD tests.
-          cat <<'PY' | sed 's/^          //' > /tmp/ci_schema.py
+          cat <<'PY' | sed -E 's/^[[:space:]]+//' > /tmp/ci_schema.py
             import os
             import psycopg
 
