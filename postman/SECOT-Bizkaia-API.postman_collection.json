@@ -1,8 +1,8 @@
 {
   "info": {
-    "name": "SECOT Bizkaia API - CRUD Seniors",
+    "name": "SECOT Bizkaia API - CRUD Resources",
     "_postman_id": "f1f1e91f-2e9c-4b61-9a8c-0a729a5f0a23",
-    "description": "Pruebas CRUD (C, R, U, D) para /seniors.",
+    "description": "Pruebas CRUD (C, R, U, D) para seniors, grupos, centros, usuarios y actividades.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -248,6 +248,787 @@
           ]
         }
       }
+    },
+    {
+      "name": "C - Create Grupo",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const ts = new Date().toISOString().replace(/[-:.TZ]/g, '');",
+              "pm.collectionVariables.set('grupo_nombre', `Postman Grupo ${ts}`);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201 Created', () => pm.response.to.have.status(201));",
+              "const json = pm.response.json();",
+              "pm.test('tiene grupo_id', () => pm.expect(json).to.have.property('grupo_id'));",
+              "pm.collectionVariables.set('grupo_id', json.grupo_id);",
+              "pm.test('nombre coincide', () => pm.expect(json.nombre_grupo).to.eql(pm.collectionVariables.get('grupo_nombre')));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre_grupo\": \"{{grupo_nombre}}\",\n  \"descripcion\": \"Grupo creado por Postman\",\n  \"color_hex\": \"#FF5733\",\n  \"canal_teams\": \"Postman Team\",\n  \"activo\": true\n}\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/grupos",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "grupos"
+          ]
+        }
+      }
+    },
+    {
+      "name": "R - Read Grupo",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('grupo_id coincide', () => pm.expect(json.grupo_id).to.eql(+pm.collectionVariables.get('grupo_id')));",
+              "pm.test('nombre coincide', () => pm.expect(json.nombre_grupo).to.eql(pm.collectionVariables.get('grupo_nombre')));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/grupos/{{grupo_id}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "grupos",
+            "{{grupo_id}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "U - Update Grupo",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('color actualizado', () => pm.expect(json.color_hex).to.eql('#00FF00'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"color_hex\": \"#00FF00\"\n}\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/grupos/{{grupo_id}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "grupos",
+            "{{grupo_id}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "C - Create Centro",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const ts = new Date().toISOString().replace(/[-:.TZ]/g, '');",
+              "pm.collectionVariables.set('centro_nombre', `Postman Centro ${ts}`);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201 Created', () => pm.response.to.have.status(201));",
+              "const json = pm.response.json();",
+              "pm.test('tiene centro_id', () => pm.expect(json).to.have.property('centro_id'));",
+              "pm.collectionVariables.set('centro_id', json.centro_id);",
+              "pm.test('nombre coincide', () => pm.expect(json.nombre).to.eql(pm.collectionVariables.get('centro_nombre')));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"{{centro_nombre}}\",\n  \"tipo\": \"Taller\",\n  \"direccion\": \"Calle Postman 1\",\n  \"municipio\": \"Bilbao\",\n  \"responsable_centro\": \"Equipo Postman\",\n  \"email_responsable\": \"centro.postman@example.com\",\n  \"telefono_responsable\": \"944000000\",\n  \"observaciones\": \"Centro de prueba Postman\",\n  \"activo\": true\n}\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/centros",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "centros"
+          ]
+        }
+      }
+    },
+    {
+      "name": "R - Read Centro",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('centro_id coincide', () => pm.expect(json.centro_id).to.eql(+pm.collectionVariables.get('centro_id')));",
+              "pm.test('nombre coincide', () => pm.expect(json.nombre).to.eql(pm.collectionVariables.get('centro_nombre')));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/centros/{{centro_id}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "centros",
+            "{{centro_id}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "U - Update Centro",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('municipio actualizado', () => pm.expect(json.municipio).to.eql('Bilbao'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"municipio\": \"Bilbao\"\n}\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/centros/{{centro_id}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "centros",
+            "{{centro_id}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "C - Create Usuario",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const ts = new Date().toISOString().replace(/[-:.TZ]/g, '');",
+              "pm.collectionVariables.set('usuario_username', `postmanuser_${ts}`);",
+              "pm.collectionVariables.set('usuario_email', `postman.user.${ts}@example.com`);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201 Created', () => pm.response.to.have.status(201));",
+              "const json = pm.response.json();",
+              "pm.test('tiene usuario_id', () => pm.expect(json).to.have.property('usuario_id'));",
+              "pm.collectionVariables.set('usuario_id', json.usuario_id);",
+              "pm.test('username coincide', () => pm.expect(json.username).to.eql(pm.collectionVariables.get('usuario_username')));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{usuario_username}}\",\n  \"email\": \"{{usuario_email}}\",\n  \"password\": \"Postman123!\",\n  \"rol\": \"read\",\n  \"activo\": true\n}\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/usuarios",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "usuarios"
+          ]
+        }
+      }
+    },
+    {
+      "name": "R - Read Usuario",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('usuario_id coincide', () => pm.expect(json.usuario_id).to.eql(+pm.collectionVariables.get('usuario_id')));",
+              "pm.test('username coincide', () => pm.expect(json.username).to.eql(pm.collectionVariables.get('usuario_username')));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/usuarios/{{usuario_id}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "usuarios",
+            "{{usuario_id}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "U - Update Usuario",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('rol actualizado', () => pm.expect(json.rol).to.eql('write'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"rol\": \"write\"\n}\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/usuarios/{{usuario_id}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "usuarios",
+            "{{usuario_id}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "D - Delete Usuario (hard)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('204 No Content', () => pm.response.to.have.status(204));",
+              "",
+              "pm.sendRequest({",
+              "  url: `${pm.variables.get('baseUrl')}/usuarios/${pm.variables.get('usuario_id')}`,",
+              "  method: 'GET',",
+              "  header: {",
+              "    Authorization: `Bearer ${pm.collectionVariables.get('access_token')}`",
+              "  }",
+              "}, (err, res) => {",
+              "  pm.test('después de hard delete devuelve 404', () => {",
+                "    pm.expect(err).to.equal(null);",
+                "    pm.expect(res.code).to.eql(404);",
+              "  });",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/usuarios/{{usuario_id}}?hard=true",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "usuarios",
+            "{{usuario_id}}"
+          ],
+          "query": [
+            {
+              "key": "hard",
+              "value": "true"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "C - Create Actividad",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const ts = new Date().toISOString().replace(/[-:.TZ]/g, '');",
+              "pm.collectionVariables.set('actividad_titulo', `Postman Actividad ${ts}`);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201 Created', () => pm.response.to.have.status(201));",
+              "const json = pm.response.json();",
+              "pm.test('tiene actividad_id', () => pm.expect(json).to.have.property('actividad_id'));",
+              "pm.collectionVariables.set('actividad_id', json.actividad_id);",
+              "pm.test('titulo coincide', () => pm.expect(json.titulo_actividad).to.eql(pm.collectionVariables.get('actividad_titulo')));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"grupo_id\": {{grupo_id}},\n  \"centro_id\": {{centro_id}},\n  \"titulo_actividad\": \"{{actividad_titulo}}\",\n  \"descripcion\": \"Actividad creada por Postman\",\n  \"tipo_actividad\": \"Taller\",\n  \"estado_actividad\": \"planificado\",\n  \"fecha_inicio_prevista\": \"2026-06-01\",\n  \"fecha_fin_prevista\": \"2026-06-05\",\n  \"activo\": true\n}\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/actividades",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "actividades"
+          ]
+        }
+      }
+    },
+    {
+      "name": "R - Read Actividad",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('actividad_id coincide', () => pm.expect(json.actividad_id).to.eql(+pm.collectionVariables.get('actividad_id')));",
+              "pm.test('titulo coincide', () => pm.expect(json.titulo_actividad).to.eql(pm.collectionVariables.get('actividad_titulo')));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/actividades/{{actividad_id}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "actividades",
+            "{{actividad_id}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "U - Update Actividad",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('estado actualizado', () => pm.expect(json.estado_actividad).to.eql('confirmado'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"estado_actividad\": \"confirmado\"\n}\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/actividades/{{actividad_id}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "actividades",
+            "{{actividad_id}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "D - Delete Actividad (hard)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('204 No Content', () => pm.response.to.have.status(204));",
+              "",
+              "pm.sendRequest({",
+              "  url: `${pm.variables.get('baseUrl')}/actividades/${pm.variables.get('actividad_id')}`,",
+              "  method: 'GET',",
+              "  header: {",
+              "    Authorization: `Bearer ${pm.collectionVariables.get('access_token')}`",
+              "  }",
+              "}, (err, res) => {",
+              "  pm.test('después de hard delete devuelve 404', () => {",
+                "    pm.expect(err).to.equal(null);",
+                "    pm.expect(res.code).to.eql(404);",
+              "  });",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/actividades/{{actividad_id}}?hard=true",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "actividades",
+            "{{actividad_id}}"
+          ],
+          "query": [
+            {
+              "key": "hard",
+              "value": "true"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "D - Delete Centro (hard)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('204 No Content', () => pm.response.to.have.status(204));",
+              "",
+              "pm.sendRequest({",
+              "  url: `${pm.variables.get('baseUrl')}/centros/${pm.variables.get('centro_id')}`,",
+              "  method: 'GET',",
+              "  header: {",
+              "    Authorization: `Bearer ${pm.collectionVariables.get('access_token')}`",
+              "  }",
+              "}, (err, res) => {",
+              "  pm.test('después de hard delete devuelve 404', () => {",
+                "    pm.expect(err).to.equal(null);",
+                "    pm.expect(res.code).to.eql(404);",
+              "  });",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/centros/{{centro_id}}?hard=true",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "centros",
+            "{{centro_id}}"
+          ],
+          "query": [
+            {
+              "key": "hard",
+              "value": "true"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "D - Delete Grupo (hard)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('204 No Content', () => pm.response.to.have.status(204));",
+              "",
+              "pm.sendRequest({",
+              "  url: `${pm.variables.get('baseUrl')}/grupos/${pm.variables.get('grupo_id')}`,",
+              "  method: 'GET',",
+              "  header: {",
+              "    Authorization: `Bearer ${pm.collectionVariables.get('access_token')}`",
+              "  }",
+              "}, (err, res) => {",
+              "  pm.test('después de hard delete devuelve 404', () => {",
+                "    pm.expect(err).to.equal(null);",
+                "    pm.expect(res.code).to.eql(404);",
+              "  });",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/grupos/{{grupo_id}}?hard=true",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "grupos",
+            "{{grupo_id}}"
+          ],
+          "query": [
+            {
+              "key": "hard",
+              "value": "true"
+            }
+          ]
+        }
+      }
     }
   ],
   "variable": [
@@ -273,6 +1054,22 @@
     },
     {
       "key": "senior_id",
+      "value": ""
+    },
+    {
+      "key": "grupo_id",
+      "value": ""
+    },
+    {
+      "key": "centro_id",
+      "value": ""
+    },
+    {
+      "key": "usuario_id",
+      "value": ""
+    },
+    {
+      "key": "actividad_id",
       "value": ""
     }
   ]
