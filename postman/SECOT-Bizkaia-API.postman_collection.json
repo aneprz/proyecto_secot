@@ -76,7 +76,7 @@
               "pm.test('tiene senior_id', () => pm.expect(json).to.have.property('senior_id'));",
               "pm.collectionVariables.set('senior_id', json.senior_id);",
               "",
-              "pm.test('email coincide', () => pm.expect(json.email).to.eql(pm.collectionVariables.get('email')));"
+              "pm.test('email coincide', () => pm.expect(json.email_personal).to.eql(pm.collectionVariables.get('email')));"
             ]
           }
         }
@@ -95,7 +95,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"nombre\": \"Postman\",\n  \"apellidos\": \"CRUD\",\n  \"email\": \"{{email}}\",\n  \"movil\": \"600000000\",\n  \"fecha_alta\": \"2026-01-01\",\n  \"activo\": true\n}\n",
+          "raw": "{\n  \"nombre\": \"Postman\",\n  \"apellido1\": \"CRUD\",\n  \"apellido2\": \"Test\",\n  \"email_personal\": \"{{email}}\",\n  \"movil\": \"600000000\",\n  \"fecha_alta\": \"2026-01-01\",\n  \"activo\": true\n}\n",
           "options": {
             "raw": {
               "language": "json"
@@ -124,7 +124,7 @@
               "pm.test('200 OK', () => pm.response.to.have.status(200));",
               "const json = pm.response.json();",
               "pm.test('senior_id coincide', () => pm.expect(json.senior_id).to.eql(+pm.collectionVariables.get('senior_id')));",
-              "pm.test('email coincide', () => pm.expect(json.email).to.eql(pm.collectionVariables.get('email')));"
+              "pm.test('email coincide', () => pm.expect(json.email_personal).to.eql(pm.collectionVariables.get('email')));"
             ]
           }
         }
