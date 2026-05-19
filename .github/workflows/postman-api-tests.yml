@@ -76,7 +76,7 @@ jobs:
           done
 
           # Minimal schema required for the Postman CRUD tests.
-          python - <<'PY'
+          cat <<'PY' | sed 's/^          //' > /tmp/ci_schema.py
             import os
             import psycopg
 
@@ -179,6 +179,7 @@ jobs:
             cur.close()
             conn.close()
           PY
+          python /tmp/ci_schema.py
 
           # Create bcrypt hash for default Postman password: "admin".
           # NOTE: writing to $GITHUB_ENV only affects subsequent *steps*, so we also export it
