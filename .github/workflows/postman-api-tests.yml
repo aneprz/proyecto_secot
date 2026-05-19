@@ -258,7 +258,16 @@ jobs:
       - name: Run collection
         id: newman
         continue-on-error: true
+        shell: bash
         run: |
+          set -euxo pipefail
+
+          pwd
+          ls -la
+          ls -la postman
+          command -v npx || command -v newman
+          npx newman --version || true
+
           if [ -z "${BASE_URL}" ]; then
             echo "Missing BASE_URL. Define secrets.API_BASE_URL or set deployment environment_url."
             exit 2
@@ -276,11 +285,11 @@ jobs:
             newman_args+=(--env-var "password=${AUTH_PASS}")
           fi
 
-          newman run postman/SECOT-Bizkaia-API.postman_collection.json \
+          npx newman run postman/SECOT-Bizkaia-API.postman_collection.json \
             -e postman/SECOT-Bizkaia-API.postman_environment.json \
             "${newman_args[@]}" \
             --reporters cli,json \
-            --reporter-json-export newman-report.json
+            --reporter-json-export ./newman-report.json
 
       - name: Summarize results
         if: always()
