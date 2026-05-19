@@ -60,14 +60,21 @@ async function request(path, options = {}) {
   const token = getAccessToken();
   const authHeader = token ? { Authorization: `Bearer ${token}` } : {};
 
-  const res = await fetch(`${apiUrl}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...authHeader,
-      ...(options.headers || {}),
-    },
-    ...options,
-  });
+  let res;
+  try {
+    res = await fetch(`${apiUrl}${path}`, {
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader,
+        ...(options.headers || {}),
+      },
+      ...options,
+    });
+  } catch (err) {
+    throw new Error(
+      "No se pudo conectar con el servidor. Revisa la URL de la API y que el backend permite este origen (CORS)."
+    );
+  }
 
   if (res.status === 204) return null;
 
