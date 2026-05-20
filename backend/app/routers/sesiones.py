@@ -1,3 +1,5 @@
+from datetime import time
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from psycopg.rows import dict_row
 
@@ -9,7 +11,12 @@ router = APIRouter(prefix="/sesiones", tags=["sesiones"], dependencies=[Depends(
 
 
 def _row_to_sesion(row) -> SesionOut:
-    return SesionOut(**row)
+    data = dict(row)
+    if isinstance(data.get("hora_inicio"), time):
+        data["hora_inicio"] = data["hora_inicio"].isoformat()
+    if isinstance(data.get("hora_fin"), time):
+        data["hora_fin"] = data["hora_fin"].isoformat()
+    return SesionOut(**data)
 
 
 @router.get("", response_model=list[SesionOut])

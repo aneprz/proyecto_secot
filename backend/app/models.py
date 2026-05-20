@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, time
 from typing import Annotated
 
 from pydantic import BaseModel, EmailStr, Field
@@ -207,8 +207,8 @@ class SesionBase(BaseModel):
     grupo_id: int
     centro_id: int
     fecha: date
-    hora_inicio: str | None = None
-    hora_fin: str | None = None
+    hora_inicio: time | None = None
+    hora_fin: time | None = None
     duracion_horas: float | None = None
     titulo_sesion: Annotated[str | None, Field(max_length=200)] = None
     ubicacion: Annotated[str | None, Field(max_length=255)] = None
@@ -227,8 +227,8 @@ class SesionUpdate(BaseModel):
     grupo_id: int | None = None
     centro_id: int | None = None
     fecha: date | None = None
-    hora_inicio: str | None = None
-    hora_fin: str | None = None
+    hora_inicio: time | None = None
+    hora_fin: time | None = None
     duracion_horas: float | None = None
     titulo_sesion: Annotated[str | None, Field(max_length=200)] = None
     ubicacion: Annotated[str | None, Field(max_length=255)] = None
