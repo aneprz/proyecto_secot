@@ -47,9 +47,14 @@ export default function SeniorsPage({ onBack }) {
 
   function onChange(e) {
     const { name, type, value, checked } = e.target;
+    const nextValue =
+      name === "movil"
+        ? value.replace(/[^\d+\s\-()]/g, "")
+        : value;
+
     setForm((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: type === "checkbox" ? checked : nextValue,
     }));
   }
 
@@ -77,13 +82,21 @@ export default function SeniorsPage({ onBack }) {
     setLoading(true);
     setError("");
     try {
+      const movilValue = form.movil.trim();
+      if (movilValue) {
+        const cleaned = movilValue.replace(/[^\d]/g, "");
+        if (cleaned.length < 7 || cleaned.length > 15) {
+          throw new Error("El móvil debe contener entre 7 y 15 dígitos válidos.");
+        }
+      }
+
       const payload = {
         nombre: form.nombre.trim(),
         apellido1: form.apellido1.trim(),
         apellido2: form.apellido2.trim(),
         email_personal: form.email_personal.trim() || null,
         email_secot: form.email_secot.trim() || null,
-        movil: form.movil.trim() || null,
+        movil: movilValue || null,
         fecha_alta: form.fecha_alta || null,
         activo: Boolean(form.activo),
       };
@@ -192,7 +205,14 @@ export default function SeniorsPage({ onBack }) {
         </div>
         <div style={{ display: "grid", gap: 6 }}>
           <label>Móvil</label>
-          <input name="movil" value={form.movil} onChange={onChange} />
+          <input
+            type="tel"
+            name="movil"
+            value={form.movil}
+            onChange={onChange}
+            pattern="^\+?[0-9\s\-()]{7,30}$"
+            title="Solo números, espacios, guiones, paréntesis y un prefijo + opcional"
+          />
         </div>
         <div style={{ display: "grid", gap: 6 }}>
           <label>Fecha alta</label>
@@ -242,6 +262,8 @@ export default function SeniorsPage({ onBack }) {
             <th style={{ padding: "8px 6px" }}>Apellido 2</th>
             <th style={{ padding: "8px 6px" }}>Email personal</th>
             <th style={{ padding: "8px 6px" }}>Email SECOT</th>
+            <th style={{ padding: "8px 6px" }}>Móvil</th>
+            <th style={{ padding: "8px 6px" }}>Fecha alta</th>
             <th style={{ padding: "8px 6px" }}>Activo</th>
             <th style={{ padding: "8px 6px" }}></th>
           </tr>
@@ -255,6 +277,8 @@ export default function SeniorsPage({ onBack }) {
               <td style={{ padding: "8px 6px" }}>{it.apellido2}</td>
               <td style={{ padding: "8px 6px" }}>{it.email_personal || ""}</td>
               <td style={{ padding: "8px 6px" }}>{it.email_secot || ""}</td>
+              <td style={{ padding: "8px 6px" }}>{it.movil || ""}</td>
+              <td style={{ padding: "8px 6px" }}>{it.fecha_alta || ""}</td>
               <td style={{ padding: "8px 6px" }}>{it.activo ? "Sí" : "No"}</td>
               <td style={{ padding: "8px 6px", display: "flex", gap: 8 }}>
                 <button onClick={() => startEdit(it)} disabled={loading}>
@@ -268,7 +292,7 @@ export default function SeniorsPage({ onBack }) {
           ))}
           {items.length === 0 ? (
             <tr>
-              <td colSpan={8} style={{ padding: 10, color: "#666" }}>
+              <td colSpan={10} style={{ padding: 10, color: "#666" }}>
                 Sin datos
               </td>
             </tr>
@@ -278,3 +302,4 @@ export default function SeniorsPage({ onBack }) {
     </div>
   );
 }
+

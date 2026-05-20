@@ -32,6 +32,21 @@ export default function GruposPage({ onBack }) {
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
 
+  const seniorById = useMemo(() => {
+    const map = new Map();
+    for (const senior of seniors) {
+      map.set(senior.senior_id, senior);
+    }
+    return map;
+  }, [seniors]);
+
+  function renderSeniorLabel(seniorId) {
+    if (seniorId === null || seniorId === undefined) return "";
+    const senior = seniorById.get(seniorId);
+    if (!senior) return `#${seniorId}`;
+    return `#${seniorId} — ${senior.nombre} ${senior.apellido1} ${senior.apellido2}`;
+  }
+
   async function refresh() {
     setLoading(true);
     setError("");
@@ -286,7 +301,7 @@ export default function GruposPage({ onBack }) {
                 </div>
               </td>
               <td style={{ padding: "8px 6px" }}>{it.canal_teams || ""}</td>
-              <td style={{ padding: "8px 6px" }}>{it.responsable_senior_id ?? ""}</td>
+              <td style={{ padding: "8px 6px" }}>{renderSeniorLabel(it.responsable_senior_id)}</td>
               <td style={{ padding: "8px 6px" }}>{it.activo ? "Sí" : "No"}</td>
               <td style={{ padding: "8px 6px", display: "flex", gap: 8 }}>
                 <button onClick={() => startEdit(it)} disabled={loading}>
