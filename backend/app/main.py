@@ -7,6 +7,7 @@ from .routers.auth import router as auth_router
 from .routers.actividades import router as actividades_router
 from .routers.actividad_seniors import router as actividad_seniors_router
 from .routers.centros import router as centros_router
+from .routers.delegaciones import router as delegaciones_router
 from .routers.grupo_seniors import router as grupo_seniors_router
 from .routers.grupos import router as grupos_router
 from .routers.seniors import router as seniors_router
@@ -61,6 +62,7 @@ def db_ping():
 app.include_router(seniors_router)
 app.include_router(auth_router)
 app.include_router(usuarios_router)
+app.include_router(delegaciones_router)
 app.include_router(grupos_router)
 app.include_router(grupo_seniors_router)
 app.include_router(centros_router)

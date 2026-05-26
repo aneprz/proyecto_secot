@@ -17,3 +17,5 @@ databaseChangeLog:
       file: db/changelog/changes/009_actividad_descripcion.yaml
   - include:
       file: db/changelog/changes/010_sesion_campos_extra.yaml
+  - include:
+      file: db/changelog/changes/011_delegacion.yaml

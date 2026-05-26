@@ -118,6 +118,26 @@ class CentroOut(CentroBase):
     centro_id: int
 
 
+class DelegacionBase(BaseModel):
+    codigo: Annotated[str, Field(min_length=1, max_length=80)]
+    nombre: Annotated[str, Field(min_length=1, max_length=200)]
+    activo: bool = True
+
+
+class DelegacionCreate(DelegacionBase):
+    pass
+
+
+class DelegacionUpdate(BaseModel):
+    codigo: Annotated[str | None, Field(min_length=1, max_length=80)] = None
+    nombre: Annotated[str | None, Field(min_length=1, max_length=200)] = None
+    activo: bool | None = None
+
+
+class DelegacionOut(DelegacionBase):
+    delegacion_id: int
+
+
 class SeniorGrupoBase(BaseModel):
     senior_id: int
     grupo_id: int

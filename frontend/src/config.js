@@ -1,4 +1,4 @@
-export const APP_VERSION = "1.3.1";
+export const APP_VERSION = "1.4.0";
 export const API_BASE_URL = "http://localhost:8000";
 
 export const ROLES = {

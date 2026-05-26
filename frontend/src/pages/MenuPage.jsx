@@ -123,6 +123,22 @@ export default function MenuPage({ onNavigate }) {
             </div>
           </div>
 
+          {/* Delegaciones (Solo Admin) */}
+          {canAdmin() && (
+            <div
+              style={{
+                ...styles.menuCard,
+                borderTop: "4px solid #d35400",
+              }}
+              onClick={() => onNavigate("delegaciones")}
+            >
+              <div style={styles.cardIcon}>🏷️</div>
+              <h3 style={styles.cardTitle}>Delegaciones</h3>
+              <p style={styles.cardDesc}>Gestionar delegaciones</p>
+              <div style={styles.badge}>🔒 Admin</div>
+            </div>
+          )}
+
           {/* Usuarios (Solo Admin) */}
           {canAdmin() && (
             <div

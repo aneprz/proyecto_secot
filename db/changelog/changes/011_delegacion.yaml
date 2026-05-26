@@ -1,0 +1,35 @@
+databaseChangeLog:
+  - changeSet:
+      id: 011-delegacion
+      author: proyecto_secot
+      changes:
+        - createTable:
+            tableName: delegacion
+            columns:
+              - column:
+                  name: delegacion_id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: codigo
+                  type: VARCHAR(80)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: nombre
+                  type: VARCHAR(200)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: activo
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: delegacion
+            columnNames: codigo
+            constraintName: uq_delegacion_codigo
