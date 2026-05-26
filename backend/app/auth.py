@@ -80,6 +80,8 @@ def _get_user_role(username: str) -> str:
                 if row:
                     role = row.get("rol") or "read"
                     # Compatibilidad con datos legacy (p.ej. "user").
+                    if role == "user":
+                        return "write"
                     return role if role in ROLE_HIERARCHY else "read"
     except Exception:
         pass

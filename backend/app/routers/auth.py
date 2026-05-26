@@ -82,9 +82,12 @@ def login(payload: LoginRequest):
                         {"id": row["usuario_id"]},
                     )
                     conn.commit()
+                    rol = row["rol"] or "read"
+                    if rol == "user":
+                        rol = "write"
                     token = create_access_token(
                         subject=row["username"],
-                        extra_claims={"rol": row["rol"]},
+                        extra_claims={"rol": rol},
                     )
                     return TokenResponse(access_token=token)
 

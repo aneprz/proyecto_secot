@@ -18,7 +18,7 @@ export default function UsuariosPage({ onBack }) {
     () => ({
       username: "",
       email: "",
-      rol: "user",
+      rol: "write",
       senior_id: "",
       password: "",
       activo: true,
@@ -85,7 +85,7 @@ export default function UsuariosPage({ onBack }) {
     setForm({
       username: item.username ?? "",
       email: item.email ?? "",
-      rol: item.rol ?? "user",
+      rol: item.rol === "user" ? "write" : item.rol ?? "write",
       senior_id: item.senior_id ?? "",
       password: "", // No mostrar contraseña existente
       activo: Boolean(item.activo),
@@ -192,7 +192,8 @@ export default function UsuariosPage({ onBack }) {
         <div style={{ display: "grid", gap: 6 }}>
           <label>Rol</label>
           <select name="rol" value={form.rol} onChange={onChange}>
-            <option value="user">User</option>
+            <option value="read">Lectura</option>
+            <option value="write">Normal</option>
             <option value="admin">Admin</option>
           </select>
         </div>
