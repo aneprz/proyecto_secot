@@ -15,7 +15,7 @@ export default function CentrosPage({ onBack }) {
       municipio: "",
       responsable_centro: "",
       email_responsable: "",
-      telefono_responsable: "",
+      telefono_responsable: "+34 ",
       observaciones: "",
       activo: true,
     }),
@@ -58,7 +58,7 @@ export default function CentrosPage({ onBack }) {
       municipio: item.municipio ?? "",
       responsable_centro: item.responsable_centro ?? "",
       email_responsable: item.email_responsable ?? "",
-      telefono_responsable: item.telefono_responsable ?? "",
+      telefono_responsable: item.telefono_responsable ?? "+34 ",
       observaciones: item.observaciones ?? "",
       activo: Boolean(item.activo),
     });
@@ -191,7 +191,7 @@ export default function CentrosPage({ onBack }) {
             name="telefono_responsable"
             value={form.telefono_responsable}
             onChange={onChange}
-            placeholder="Teléfono"
+            placeholder="Ej: +34 944 000 000"
           />
         </div>
         <div style={{ display: "grid", gap: 6 }}>

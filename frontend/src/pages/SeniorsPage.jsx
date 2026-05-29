@@ -19,7 +19,7 @@ export default function SeniorsPage({ onBack }) {
       apellido2: "",
       email_personal: "",
       email_secot: "",
-      movil: "",
+      movil: "+34 ",
       fecha_alta: "",
       activo: true,
     }),
@@ -66,7 +66,7 @@ export default function SeniorsPage({ onBack }) {
       apellido2: item.apellido2 ?? "",
       email_personal: item.email_personal ?? "",
       email_secot: item.email_secot ?? "",
-      movil: item.movil ?? "",
+      movil: item.movil ?? "+34 ",
       fecha_alta: item.fecha_alta ?? "",
       activo: Boolean(item.activo),
     });
@@ -212,6 +212,7 @@ export default function SeniorsPage({ onBack }) {
             onChange={onChange}
             pattern="^\+?[0-9\s\-()]{7,30}$"
             title="Solo números, espacios, guiones, paréntesis y un prefijo + opcional"
+            placeholder="Ej: +34 612 345 678"
           />
         </div>
         <div style={{ display: "grid", gap: 6 }}>
