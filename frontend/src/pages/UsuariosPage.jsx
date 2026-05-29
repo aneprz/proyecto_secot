@@ -6,6 +6,7 @@ import {
   updateUsuario,
 } from "../api/usuarios.js";
 import { listSeniors } from "../api/seniors.js";
+import { listDelegaciones } from "../api/delegaciones.js";
 
 export default function UsuariosPage({ onBack }) {
   const [loading, setLoading] = useState(false);
@@ -20,6 +21,7 @@ export default function UsuariosPage({ onBack }) {
       email: "",
       rol: "write",
       senior_id: "",
+      delegacion_id: "",
       password: "",
       activo: true,
     }),
@@ -27,6 +29,7 @@ export default function UsuariosPage({ onBack }) {
   );
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
+  const [delegaciones, setDelegaciones] = useState([]);
 
   async function refresh() {
     setLoading(true);
@@ -50,6 +53,8 @@ export default function UsuariosPage({ onBack }) {
       try {
         const seniorsData = await listSeniors({ includeInactive: false });
         setSeniors(seniorsData);
+        const delegs = await listDelegaciones({ includeInactive: false });
+        setDelegaciones(delegs);
       } catch (e) {
         console.error("Error cargando seniors:", e);
       }
@@ -89,6 +94,7 @@ export default function UsuariosPage({ onBack }) {
       senior_id: item.senior_id ?? "",
       password: "", // No mostrar contraseña existente
       activo: Boolean(item.activo),
+      delegacion_id: item.delegacion_id ?? "",
     });
   }
 
@@ -108,6 +114,7 @@ export default function UsuariosPage({ onBack }) {
         rol: form.rol,
         senior_id: form.senior_id ? Number(form.senior_id) : null,
         activo: Boolean(form.activo),
+        delegacion_id: form.delegacion_id ? Number(form.delegacion_id) : null,
       };
       if (form.password.trim()) {
         payload.password = form.password.trim();
@@ -204,6 +211,17 @@ export default function UsuariosPage({ onBack }) {
             {seniors.map((senior) => (
               <option key={senior.senior_id} value={String(senior.senior_id)}>
                 #{senior.senior_id} — {senior.nombre} {senior.apellido1 || ""} {senior.apellido2 || ""}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div style={{ display: "grid", gap: 6 }}>
+          <label>Delegación (opcional)</label>
+          <select name="delegacion_id" value={form.delegacion_id} onChange={onChange}>
+            <option value="">-- Ninguna --</option>
+            {delegaciones.map((d) => (
+              <option key={d.delegacion_id} value={String(d.delegacion_id)}>
+                {d.nombre}
               </option>
             ))}
           </select>

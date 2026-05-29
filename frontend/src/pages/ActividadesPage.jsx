@@ -14,6 +14,7 @@ import {
 import { listCentros } from "../api/centros.js";
 import { listGrupos } from "../api/grupos.js";
 import { listSeniors } from "../api/seniors.js";
+import { listDelegaciones } from "../api/delegaciones.js";
 
 export default function ActividadesPage({ onBack }) {
   const [loading, setLoading] = useState(false);
@@ -30,6 +31,7 @@ export default function ActividadesPage({ onBack }) {
     () => ({
       grupo_id: "",
       centro_id: "",
+      delegacion_id: "",
       titulo_actividad: "",
       descripcion: "",
       tipo_actividad: "",
@@ -44,6 +46,7 @@ export default function ActividadesPage({ onBack }) {
 
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
+  const [delegaciones, setDelegaciones] = useState([]);
 
   const emptyAssignmentForm = useMemo(
     () => ({
@@ -62,16 +65,18 @@ export default function ActividadesPage({ onBack }) {
     setLoading(true);
     setError("");
     try {
-      const [actividadesData, gruposData, centrosData, seniorsData] = await Promise.all([
+      const [actividadesData, gruposData, centrosData, seniorsData, delegs] = await Promise.all([
         listActividades({ includeInactive }),
         listGrupos({ includeInactive: false }),
         listCentros({ includeInactive: false }),
         listSeniors({ includeInactive: false }),
+        listDelegaciones({ includeInactive: false }),
       ]);
       setItems(actividadesData);
       setGrupos(gruposData);
       setCentros(centrosData);
       setSeniors(seniorsData);
+      setDelegaciones(delegs);
     } catch (e) {
       setError(e?.message || String(e));
     } finally {
@@ -158,6 +163,7 @@ export default function ActividadesPage({ onBack }) {
       const payload = {
         grupo_id: Number(form.grupo_id),
         centro_id: Number(form.centro_id),
+        delegacion_id: form.delegacion_id ? Number(form.delegacion_id) : null,
         titulo_actividad: form.titulo_actividad.trim(),
         descripcion: form.descripcion.trim() || null,
         tipo_actividad: form.tipo_actividad.trim() || null,
@@ -328,6 +334,18 @@ export default function ActividadesPage({ onBack }) {
                 {centros.map((c) => (
                   <option key={c.centro_id} value={c.centro_id}>
                     #{c.centro_id} - {c.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div style={styles.field}>
+              <label>Delegación</label>
+              <select name="delegacion_id" value={form.delegacion_id} onChange={onChange}>
+                <option value="">-- Ninguna --</option>
+                {delegaciones.map((d) => (
+                  <option key={d.delegacion_id} value={d.delegacion_id}>
+                    {d.nombre}
                   </option>
                 ))}
               </select>

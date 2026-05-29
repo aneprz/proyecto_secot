@@ -5,6 +5,7 @@ import {
   listSeniors,
   updateSenior,
 } from "../api/seniors.js";
+import { listDelegaciones } from "../api/delegaciones.js";
 
 export default function SeniorsPage({ onBack }) {
   const [loading, setLoading] = useState(false);
@@ -20,11 +21,13 @@ export default function SeniorsPage({ onBack }) {
       email_personal: "",
       email_secot: "",
       movil: "+34 ",
+      delegacion_id: "",
       fecha_alta: "",
       activo: true,
     }),
     []
   );
+  const [delegaciones, setDelegaciones] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
 
@@ -34,6 +37,8 @@ export default function SeniorsPage({ onBack }) {
     try {
       const data = await listSeniors({ includeInactive });
       setItems(data);
+      const delegs = await listDelegaciones({ includeInactive: false });
+      setDelegaciones(delegs);
     } catch (e) {
       setError(e?.message || String(e));
     } finally {
@@ -67,6 +72,7 @@ export default function SeniorsPage({ onBack }) {
       email_personal: item.email_personal ?? "",
       email_secot: item.email_secot ?? "",
       movil: item.movil ?? "+34 ",
+      delegacion_id: item.delegacion_id ?? "",
       fecha_alta: item.fecha_alta ?? "",
       activo: Boolean(item.activo),
     });
@@ -97,6 +103,7 @@ export default function SeniorsPage({ onBack }) {
         email_personal: form.email_personal.trim() || null,
         email_secot: form.email_secot.trim() || null,
         movil: movilValue || null,
+        delegacion_id: form.delegacion_id ? Number(form.delegacion_id) : null,
         fecha_alta: form.fecha_alta || null,
         activo: Boolean(form.activo),
       };
@@ -214,6 +221,17 @@ export default function SeniorsPage({ onBack }) {
             title="Solo números, espacios, guiones, paréntesis y un prefijo + opcional"
             placeholder="Ej: +34 612 345 678"
           />
+        </div>
+        <div style={{ display: "grid", gap: 6 }}>
+          <label>Delegación</label>
+          <select name="delegacion_id" value={form.delegacion_id} onChange={onChange}>
+            <option value="">-- Ninguna --</option>
+            {delegaciones.map((d) => (
+              <option key={d.delegacion_id} value={String(d.delegacion_id)}>
+                {d.nombre}
+              </option>
+            ))}
+          </select>
         </div>
         <div style={{ display: "grid", gap: 6 }}>
           <label>Fecha alta</label>

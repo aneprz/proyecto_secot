@@ -1,0 +1,110 @@
+databaseChangeLog:
+  - changeSet:
+      id: 012-delegacion-refs
+      author: proyecto_secot
+      changes:
+        - addColumn:
+            tableName: senior
+            columns:
+              - column:
+                  name: delegacion_id
+                  type: BIGINT
+        - addColumn:
+            tableName: grupo
+            columns:
+              - column:
+                  name: delegacion_id
+                  type: BIGINT
+        - addColumn:
+            tableName: actividad
+            columns:
+              - column:
+                  name: delegacion_id
+                  type: BIGINT
+        - addColumn:
+            tableName: centro
+            columns:
+              - column:
+                  name: delegacion_id
+                  type: BIGINT
+        - addColumn:
+            tableName: usuario
+            columns:
+              - column:
+                  name: delegacion_id
+                  type: BIGINT
+
+        - addForeignKeyConstraint:
+            baseTableName: senior
+            baseColumnNames: delegacion_id
+            referencedTableName: delegacion
+            referencedColumnNames: delegacion_id
+            constraintName: fk_senior_delegacion
+            onDelete: SET NULL
+
+        - addForeignKeyConstraint:
+            baseTableName: grupo
+            baseColumnNames: delegacion_id
+            referencedTableName: delegacion
+            referencedColumnNames: delegacion_id
+            constraintName: fk_grupo_delegacion
+            onDelete: SET NULL
+
+        - addForeignKeyConstraint:
+            baseTableName: actividad
+            baseColumnNames: delegacion_id
+            referencedTableName: delegacion
+            referencedColumnNames: delegacion_id
+            constraintName: fk_actividad_delegacion
+            onDelete: SET NULL
+
+        - addForeignKeyConstraint:
+            baseTableName: centro
+            baseColumnNames: delegacion_id
+            referencedTableName: delegacion
+            referencedColumnNames: delegacion_id
+            constraintName: fk_centro_delegacion
+            onDelete: SET NULL
+
+        - addForeignKeyConstraint:
+            baseTableName: usuario
+            baseColumnNames: delegacion_id
+            referencedTableName: delegacion
+            referencedColumnNames: delegacion_id
+            constraintName: fk_usuario_delegacion
+            onDelete: SET NULL
+
+        - createIndex:
+            tableName: senior
+            indexName: ix_senior_delegacion_id
+            columns:
+              - column:
+                  name: delegacion_id
+
+        - createIndex:
+            tableName: grupo
+            indexName: ix_grupo_delegacion_id
+            columns:
+              - column:
+                  name: delegacion_id
+
+        - createIndex:
+            tableName: actividad
+            indexName: ix_actividad_delegacion_id
+            columns:
+              - column:
+                  name: delegacion_id
+
+        - createIndex:
+            tableName: centro
+            indexName: ix_centro_delegacion_id
+            columns:
+              - column:
+                  name: delegacion_id
+
+        - createIndex:
+            tableName: usuario
+            indexName: ix_usuario_delegacion_id
+            columns:
+              - column:
+                  name: delegacion_id

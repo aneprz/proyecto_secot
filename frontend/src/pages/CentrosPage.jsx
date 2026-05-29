@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { createCentro, deleteCentro, listCentros, updateCentro } from "../api/centros.js";
+import { listDelegaciones } from "../api/delegaciones.js";
 
 export default function CentrosPage({ onBack }) {
   const [loading, setLoading] = useState(false);
@@ -16,11 +17,13 @@ export default function CentrosPage({ onBack }) {
       responsable_centro: "",
       email_responsable: "",
       telefono_responsable: "+34 ",
+      delegacion_id: "",
       observaciones: "",
       activo: true,
     }),
     [],
   );
+  const [delegaciones, setDelegaciones] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
 
@@ -30,6 +33,8 @@ export default function CentrosPage({ onBack }) {
     try {
       const data = await listCentros({ includeInactive });
       setItems(data);
+      const delegs = await listDelegaciones({ includeInactive: false });
+      setDelegaciones(delegs);
     } catch (e) {
       setError(e?.message || String(e));
     } finally {
@@ -59,6 +64,7 @@ export default function CentrosPage({ onBack }) {
       responsable_centro: item.responsable_centro ?? "",
       email_responsable: item.email_responsable ?? "",
       telefono_responsable: item.telefono_responsable ?? "+34 ",
+      delegacion_id: item.delegacion_id ?? "",
       observaciones: item.observaciones ?? "",
       activo: Boolean(item.activo),
     });
@@ -82,6 +88,7 @@ export default function CentrosPage({ onBack }) {
         responsable_centro: form.responsable_centro.trim() || null,
         email_responsable: form.email_responsable.trim() || null,
         telefono_responsable: form.telefono_responsable.trim() || null,
+        delegacion_id: form.delegacion_id ? Number(form.delegacion_id) : null,
         observaciones: form.observaciones.trim() || null,
         activo: Boolean(form.activo),
       };
@@ -193,6 +200,17 @@ export default function CentrosPage({ onBack }) {
             onChange={onChange}
             placeholder="Ej: +34 944 000 000"
           />
+        </div>
+        <div style={{ display: "grid", gap: 6 }}>
+          <label>Delegación</label>
+          <select name="delegacion_id" value={form.delegacion_id} onChange={onChange}>
+            <option value="">-- Ninguna --</option>
+            {delegaciones.map((d) => (
+              <option key={d.delegacion_id} value={String(d.delegacion_id)}>
+                {d.nombre}
+              </option>
+            ))}
+          </select>
         </div>
         <div style={{ display: "grid", gap: 6 }}>
           <label>Observaciones</label>

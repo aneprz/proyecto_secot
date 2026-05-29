@@ -12,6 +12,7 @@ class SeniorBase(BaseModel):
     email_secot: EmailStr | None = None
     movil: Annotated[str | None, Field(max_length=30)] = None
     fecha_alta: date | None = None
+    delegacion_id: int | None = None
     activo: bool = True
 
 
@@ -27,6 +28,7 @@ class SeniorUpdate(BaseModel):
     email_secot: EmailStr | None = None
     movil: Annotated[str | None, Field(max_length=30)] = None
     fecha_alta: date | None = None
+    delegacion_id: int | None = None
     activo: bool | None = None
 
 
@@ -39,6 +41,7 @@ class UsuarioBase(BaseModel):
     email: EmailStr | None = None
     rol: Annotated[str, Field(max_length=30)] = "read"  # read, write, admin
     senior_id: int | None = None
+    delegacion_id: int | None = None
     activo: bool = True
 
 
@@ -50,6 +53,7 @@ class UsuarioUpdate(BaseModel):
     email: EmailStr | None = None
     rol: Annotated[str | None, Field(max_length=30)] = None
     senior_id: int | None = None
+    delegacion_id: int | None = None
     activo: bool | None = None
     password: Annotated[str | None, Field(min_length=8, max_length=200)] = None
 
@@ -66,6 +70,7 @@ class GrupoBase(BaseModel):
     color_hex: Annotated[str | None, Field(max_length=7)] = None
     canal_teams: Annotated[str | None, Field(max_length=255)] = None
     responsable_senior_id: int | None = None
+    delegacion_id: int | None = None
     activo: bool = True
 
 
@@ -79,6 +84,7 @@ class GrupoUpdate(BaseModel):
     color_hex: Annotated[str | None, Field(max_length=7)] = None
     canal_teams: Annotated[str | None, Field(max_length=255)] = None
     responsable_senior_id: int | None = None
+    delegacion_id: int | None = None
     activo: bool | None = None
 
 
@@ -95,6 +101,7 @@ class CentroBase(BaseModel):
     email_responsable: EmailStr | None = None
     telefono_responsable: Annotated[str | None, Field(max_length=30)] = None
     observaciones: Annotated[str | None, Field(max_length=2000)] = None
+    delegacion_id: int | None = None
     activo: bool = True
 
 
@@ -110,6 +117,7 @@ class CentroUpdate(BaseModel):
     responsable_centro: Annotated[str | None, Field(max_length=200)] = None
     email_responsable: EmailStr | None = None
     telefono_responsable: Annotated[str | None, Field(max_length=30)] = None
+    delegacion_id: int | None = None
     observaciones: Annotated[str | None, Field(max_length=2000)] = None
     activo: bool | None = None
 
@@ -165,6 +173,7 @@ class SeniorGrupoOut(SeniorGrupoBase):
 class ActividadBase(BaseModel):
     grupo_id: int
     centro_id: int
+    delegacion_id: int | None = None
     titulo_actividad: Annotated[str, Field(min_length=1, max_length=200)]
     descripcion: str | None = None
     tipo_actividad: Annotated[str | None, Field(max_length=80)] = None
@@ -182,6 +191,7 @@ class ActividadCreate(ActividadBase):
 class ActividadUpdate(BaseModel):
     grupo_id: int | None = None
     centro_id: int | None = None
+    delegacion_id: int | None = None
     titulo_actividad: Annotated[str | None, Field(min_length=1, max_length=200)] = None
     descripcion: str | None = None
     tipo_actividad: Annotated[str | None, Field(max_length=80)] = None

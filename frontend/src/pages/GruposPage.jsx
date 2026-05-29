@@ -6,6 +6,7 @@ import {
   updateGrupo,
 } from "../api/grupos.js";
 import { listSeniors } from "../api/seniors.js";
+import { listDelegaciones } from "../api/delegaciones.js";
 
 export default function GruposPage({ onBack }) {
   const [loading, setLoading] = useState(false);
@@ -25,10 +26,12 @@ export default function GruposPage({ onBack }) {
       color_hex: "",
       canal_teams: "",
       responsable_senior_id: "",
+      delegacion_id: "",
       activo: true,
     }),
     []
   );
+  const [delegaciones, setDelegaciones] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
 
@@ -55,6 +58,8 @@ export default function GruposPage({ onBack }) {
       setItems(data);
       const seniorsData = await listSeniors({ includeInactive: false });
       setSeniors(seniorsData);
+      const delegs = await listDelegaciones({ includeInactive: false });
+      setDelegaciones(delegs);
     } catch (e) {
       setError(e?.message || String(e));
     } finally {
@@ -85,6 +90,7 @@ export default function GruposPage({ onBack }) {
         item.responsable_senior_id === null || item.responsable_senior_id === undefined
           ? ""
           : String(item.responsable_senior_id),
+      delegacion_id: item.delegacion_id ?? "",
       activo: Boolean(item.activo),
     });
   }
@@ -107,6 +113,7 @@ export default function GruposPage({ onBack }) {
         responsable_senior_id: form.responsable_senior_id
           ? Number(form.responsable_senior_id)
           : null,
+        delegacion_id: form.delegacion_id ? Number(form.delegacion_id) : null,
         activo: Boolean(form.activo),
       };
       if (editingId) {
@@ -231,6 +238,17 @@ export default function GruposPage({ onBack }) {
             {seniors.map((s) => (
               <option key={s.senior_id} value={String(s.senior_id)}>
                 #{s.senior_id} — {s.nombre} {s.apellido1} {s.apellido2}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div style={{ display: "grid", gap: 6 }}>
+          <label>Delegación</label>
+          <select name="delegacion_id" value={form.delegacion_id} onChange={onChange}>
+            <option value="">-- Ninguna --</option>
+            {delegaciones.map((d) => (
+              <option key={d.delegacion_id} value={String(d.delegacion_id)}>
+                {d.nombre}
               </option>
             ))}
           </select>
