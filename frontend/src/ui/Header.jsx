@@ -10,10 +10,12 @@ export default function Header({ onLogout }) {
     onLogout();
   };
 
+  const title = user?.delegacion_nombre ? `SECOT ${user.delegacion_nombre}` : "SECOT";
+
   return (
     <header style={styles.header}>
       <div style={styles.left}>
-        <h1 style={styles.title}>SECOT Bizkaia</h1>
+        <h1 style={styles.title}>{title}</h1>
       </div>
       <div style={styles.right}>
         <div style={styles.userInfo}>

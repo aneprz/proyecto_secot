@@ -23,7 +23,7 @@ export default function LoginPage({ onLogin }) {
 
   return (
     <div style={{ fontFamily: "system-ui", padding: 24, lineHeight: 1.4 }}>
-      <h1>SECOT Bizkaia</h1>
+      <h1>SECOT</h1>
       <h2>Login</h2>
       <form onSubmit={handleSubmit} style={{ display: "grid", gap: 10, maxWidth: 420 }}>
         <div style={{ display: "grid", gap: 6 }}>

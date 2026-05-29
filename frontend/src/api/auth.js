@@ -51,6 +51,8 @@ export async function login({ username, password }) {
   const user = {
     username: payload?.sub || username,
     rol: payload?.rol || "read",
+    delegacion_id: payload?.delegacion_id ?? null,
+    delegacion_nombre: payload?.delegacion_nombre || null,
   };
   setCurrentUser(user);
   return data;

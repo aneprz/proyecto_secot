@@ -64,10 +64,11 @@ def login(payload: LoginRequest):
     # Auth por BD (tabla `usuario`). Mantiene fallback a env para bootstrap/admin.
     if _usuario_table_exists():
         sql = """
-            select usuario_id, username, password_hash, rol
-            from usuario
-            where username = %(username)s and activo = true;
-        """
+                select u.usuario_id, u.username, u.password_hash, u.rol, u.delegacion_id, d.nombre as delegacion_nombre
+                from usuario u
+                left join delegacion d on u.delegacion_id = d.delegacion_id
+                where u.username = %(username)s and u.activo = true;
+            """
         with get_connection(row_factory=dict_row) as conn:
             with conn.cursor() as cur:
                 cur.execute(sql, {"username": payload.username})
@@ -85,9 +86,15 @@ def login(payload: LoginRequest):
                     rol = row["rol"] or "read"
                     if rol == "user":
                         rol = "write"
+                    extra = {"rol": rol}
+                    # Añadir delegación al token si existe
+                    if row.get("delegacion_id") is not None:
+                        extra["delegacion_id"] = int(row["delegacion_id"]) if row["delegacion_id"] is not None else None
+                    if row.get("delegacion_nombre"):
+                        extra["delegacion_nombre"] = row["delegacion_nombre"]
                     token = create_access_token(
                         subject=row["username"],
-                        extra_claims={"rol": rol},
+                        extra_claims=extra,
                     )
                     return TokenResponse(access_token=token)
 
