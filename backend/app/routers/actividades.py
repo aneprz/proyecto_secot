@@ -23,7 +23,7 @@ def list_actividades(
     where = "" if include_inactive else "where activo = true"
     sql = f"""
         select
-            actividad_id, grupo_id, centro_id, titulo_actividad, descripcion, tipo_actividad,
+            actividad_id, grupo_id, centro_id, delegacion_id, titulo_actividad, descripcion, tipo_actividad,
             senior_responsable_actividad_id, estado_actividad, fecha_inicio_prevista, fecha_fin_prevista, activo
         from actividad
         {where}
@@ -40,7 +40,7 @@ def list_actividades(
 def get_actividad(actividad_id: int):
     sql = """
         select
-            actividad_id, grupo_id, centro_id, titulo_actividad, descripcion, tipo_actividad,
+            actividad_id, grupo_id, centro_id, delegacion_id, titulo_actividad, descripcion, tipo_actividad,
             senior_responsable_actividad_id, estado_actividad, fecha_inicio_prevista, fecha_fin_prevista, activo
         from actividad
         where actividad_id = %(actividad_id)s;
@@ -58,15 +58,15 @@ def get_actividad(actividad_id: int):
 def create_actividad(payload: ActividadCreate, _: str = Depends(require_write)):
     sql = """
         insert into actividad (
-            grupo_id, centro_id, titulo_actividad, descripcion, tipo_actividad,
+            grupo_id, centro_id, delegacion_id, titulo_actividad, descripcion, tipo_actividad,
             senior_responsable_actividad_id, estado_actividad, fecha_inicio_prevista, fecha_fin_prevista, activo
         )
         values (
-            %(grupo_id)s, %(centro_id)s, %(titulo_actividad)s, %(descripcion)s, %(tipo_actividad)s,
+            %(grupo_id)s, %(centro_id)s, %(delegacion_id)s, %(titulo_actividad)s, %(descripcion)s, %(tipo_actividad)s,
             %(senior_responsable_actividad_id)s, %(estado_actividad)s, %(fecha_inicio_prevista)s, %(fecha_fin_prevista)s, %(activo)s
         )
         returning
-            actividad_id, grupo_id, centro_id, titulo_actividad, descripcion, tipo_actividad,
+            actividad_id, grupo_id, centro_id, delegacion_id, titulo_actividad, descripcion, tipo_actividad,
             senior_responsable_actividad_id, estado_actividad, fecha_inicio_prevista, fecha_fin_prevista, activo;
     """
     with get_connection(row_factory=dict_row) as conn:
@@ -97,7 +97,7 @@ def update_actividad(
         set {set_sql}
         where actividad_id = %(actividad_id)s
         returning
-            actividad_id, grupo_id, centro_id, titulo_actividad, descripcion, tipo_actividad,
+            actividad_id, grupo_id, centro_id, delegacion_id, titulo_actividad, descripcion, tipo_actividad,
             senior_responsable_actividad_id, estado_actividad, fecha_inicio_prevista, fecha_fin_prevista, activo;
     """
 

@@ -29,6 +29,7 @@ def list_centros(
                email_responsable,
                telefono_responsable,
                observaciones,
+               delegacion_id,
                activo
         from centro
         {where}
@@ -53,6 +54,7 @@ def get_centro(centro_id: int):
                email_responsable,
                telefono_responsable,
                observaciones,
+               delegacion_id,
                activo
         from centro
         where centro_id = %(centro_id)s;
@@ -78,6 +80,7 @@ def create_centro(payload: CentroCreate, _: str = Depends(require_write)):
             email_responsable,
             telefono_responsable,
             observaciones,
+            delegacion_id,
             activo
         )
         values (
@@ -89,6 +92,7 @@ def create_centro(payload: CentroCreate, _: str = Depends(require_write)):
             %(email_responsable)s,
             %(telefono_responsable)s,
             %(observaciones)s,
+            %(delegacion_id)s,
             %(activo)s
         )
         returning centro_id,
@@ -100,6 +104,7 @@ def create_centro(payload: CentroCreate, _: str = Depends(require_write)):
                   email_responsable,
                   telefono_responsable,
                   observaciones,
+                  delegacion_id,
                   activo;
     """
     with get_connection(row_factory=dict_row) as conn:
@@ -137,6 +142,7 @@ def update_centro(centro_id: int, payload: CentroUpdate, _: str = Depends(requir
                   email_responsable,
                   telefono_responsable,
                   observaciones,
+                  delegacion_id,
                   activo;
     """
 
