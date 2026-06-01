@@ -220,9 +220,7 @@ def fake_db(monkeypatch):
     from app.routers import actividades as actividades_router
 
     db = _FakeDb()
-    monkeypatch.setattr(
-        actividades_router, "get_connection", _fake_get_connection_factory(db)
-    )
+    monkeypatch.setattr(actividades_router, "get_connection", _fake_get_connection_factory(db))
     return db
 
 
@@ -266,4 +264,3 @@ def test_actividades_crud(client: TestClient, auth_token: str, fake_db: _FakeDb)
     res = client.get("/actividades", headers=headers)
     assert res.status_code == 200, res.text
     assert len(res.json()) == 0
-

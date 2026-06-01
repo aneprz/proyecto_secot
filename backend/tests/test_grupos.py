@@ -59,7 +59,11 @@ class _FakeCursor:
             self.rowcount = len(rows)
             return
 
-        if normalized.startswith("select") and "from grupo" in normalized and "where grupo_id" in normalized:
+        if (
+            normalized.startswith("select")
+            and "from grupo" in normalized
+            and "where grupo_id" in normalized
+        ):
             grupo_id = int(params["grupo_id"])
             row = self._db.grupos.get(grupo_id)
             self._result_one = (

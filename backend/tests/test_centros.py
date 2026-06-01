@@ -52,7 +52,11 @@ class _FakeCursor:
             self.rowcount = len(rows)
             return
 
-        if normalized.startswith("select") and "from centro" in normalized and "where centro_id" in normalized:
+        if (
+            normalized.startswith("select")
+            and "from centro" in normalized
+            and "where centro_id" in normalized
+        ):
             centro_id = int(params["centro_id"])
             row = self._db.centros.get(centro_id)
             self._result_one = row.__dict__.copy() if row else None

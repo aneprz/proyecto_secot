@@ -47,9 +47,20 @@ def list_sesiones(
 
     sql = f"""
         select
-            s.sesion_id, s.actividad_id, s.grupo_id, s.centro_id, s.fecha, s.hora_inicio, s.hora_fin,
-            s.duracion_horas, s.titulo_sesion, s.ubicacion, s.estado_sesion, s.observaciones,
-            s.es_visible_calendario, s.activo
+            s.sesion_id,
+            s.actividad_id,
+            s.grupo_id,
+            s.centro_id,
+            s.fecha,
+            s.hora_inicio,
+            s.hora_fin,
+            s.duracion_horas,
+            s.titulo_sesion,
+            s.ubicacion,
+            s.estado_sesion,
+            s.observaciones,
+            s.es_visible_calendario,
+            s.activo
         from sesion s
         {where_clause}
         order by s.sesion_id asc
@@ -89,9 +100,19 @@ def create_sesion(payload: SesionCreate, _: str = Depends(require_write)):
             es_visible_calendario, activo
         )
         values (
-            %(actividad_id)s, %(grupo_id)s, %(centro_id)s, %(fecha)s, %(hora_inicio)s, %(hora_fin)s,
-            %(duracion_horas)s, %(titulo_sesion)s, %(ubicacion)s, %(estado_sesion)s, %(observaciones)s,
-            %(es_visible_calendario)s, %(activo)s
+            %(actividad_id)s,
+            %(grupo_id)s,
+            %(centro_id)s,
+            %(fecha)s,
+            %(hora_inicio)s,
+            %(hora_fin)s,
+            %(duracion_horas)s,
+            %(titulo_sesion)s,
+            %(ubicacion)s,
+            %(estado_sesion)s,
+            %(observaciones)s,
+            %(es_visible_calendario)s,
+            %(activo)s
         )
         returning
             sesion_id, actividad_id, grupo_id, centro_id, fecha, hora_inicio, hora_fin,
@@ -151,4 +172,3 @@ def delete_sesion(sesion_id: int, hard: bool = False, _: str = Depends(require_w
             if cur.rowcount == 0:
                 raise HTTPException(status_code=404, detail="Sesión no encontrada")
             conn.commit()
-

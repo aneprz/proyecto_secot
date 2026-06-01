@@ -243,4 +243,3 @@ def test_actividad_seniors_crud(client: TestClient, auth_token: str, fake_db: _F
     res = client.get("/actividades-seniors", headers=headers)
     assert res.status_code == 200, res.text
     assert len(res.json()) == 0
-

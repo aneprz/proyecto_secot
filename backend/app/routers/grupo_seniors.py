@@ -42,7 +42,14 @@ def list_grupo_seniors(
     where_clause = "where " + " and ".join(where_parts) if where_parts else ""
 
     sql = f"""
-        select gs.senior_grupo_id, gs.senior_id, gs.grupo_id, gs.rol_en_grupo, gs.fecha_alta, gs.fecha_baja, gs.activo
+        select
+            gs.senior_grupo_id,
+            gs.senior_id,
+            gs.grupo_id,
+            gs.rol_en_grupo,
+            gs.fecha_alta,
+            gs.fecha_baja,
+            gs.activo
         from senior_grupo gs
         {where_clause}
         order by gs.senior_grupo_id asc
@@ -58,8 +65,20 @@ def list_grupo_seniors(
 def get_seniors_by_grupo(grupo_id: int):
     """Obtener todos los seniors de un grupo"""
     sql = """
-        select s.senior_id, s.nombre, s.apellido1, s.apellido2, s.email_personal, s.email_secot, s.movil, s.fecha_alta, s.activo,
-               gs.rol_en_grupo, gs.fecha_alta as fecha_asignacion, gs.fecha_baja, gs.activo as relacion_activa
+        select
+            s.senior_id,
+            s.nombre,
+            s.apellido1,
+            s.apellido2,
+            s.email_personal,
+            s.email_secot,
+            s.movil,
+            s.fecha_alta,
+            s.activo,
+            gs.rol_en_grupo,
+            gs.fecha_alta as fecha_asignacion,
+            gs.fecha_baja,
+            gs.activo as relacion_activa
         from senior_grupo gs
         join senior s on gs.senior_id = s.senior_id
         where gs.grupo_id = %(grupo_id)s and s.activo = true and gs.activo = true
@@ -75,8 +94,18 @@ def get_seniors_by_grupo(grupo_id: int):
 def get_grupos_by_senior(senior_id: int):
     """Obtener todos los grupos de un senior"""
     sql = """
-        select g.grupo_id, g.nombre_grupo, g.descripcion, g.color_hex, g.canal_teams, g.responsable_senior_id, g.activo,
-               gs.rol_en_grupo, gs.fecha_alta as fecha_asignacion, gs.fecha_baja, gs.activo as relacion_activa
+        select
+            g.grupo_id,
+            g.nombre_grupo,
+            g.descripcion,
+            g.color_hex,
+            g.canal_teams,
+            g.responsable_senior_id,
+            g.activo,
+            gs.rol_en_grupo,
+            gs.fecha_alta as fecha_asignacion,
+            gs.fecha_baja,
+            gs.activo as relacion_activa
         from senior_grupo gs
         join grupo g on gs.grupo_id = g.grupo_id
         where gs.senior_id = %(senior_id)s and g.activo = true and gs.activo = true
@@ -97,7 +126,14 @@ def get_grupos_by_senior(senior_id: int):
 def create_grupo_senior(payload: SeniorGrupoCreate):
     """Asignar un senior a un grupo"""
     sql = """
-        insert into senior_grupo (senior_id, grupo_id, rol_en_grupo, fecha_alta, fecha_baja, activo)
+        insert into senior_grupo (
+            senior_id,
+            grupo_id,
+            rol_en_grupo,
+            fecha_alta,
+            fecha_baja,
+            activo
+        )
         values (
             %(senior_id)s,
             %(grupo_id)s,
@@ -106,7 +142,14 @@ def create_grupo_senior(payload: SeniorGrupoCreate):
             %(fecha_baja)s,
             coalesce(%(activo)s, true)
         )
-        returning senior_grupo_id, senior_id, grupo_id, rol_en_grupo, fecha_alta, fecha_baja, activo;
+        returning
+            senior_grupo_id,
+            senior_id,
+            grupo_id,
+            rol_en_grupo,
+            fecha_alta,
+            fecha_baja,
+            activo;
     """
     try:
         with get_connection(row_factory=dict_row) as conn:
@@ -136,7 +179,14 @@ def update_grupo_senior(senior_grupo_id: int, payload: SeniorGrupoUpdate):
     data = payload.model_dump(exclude_unset=True)
     if not data:
         sql = """
-            select senior_grupo_id, senior_id, grupo_id, rol_en_grupo, fecha_alta, fecha_baja, activo
+            select
+                senior_grupo_id,
+                senior_id,
+                grupo_id,
+                rol_en_grupo,
+                fecha_alta,
+                fecha_baja,
+                activo
             from senior_grupo
             where senior_grupo_id = %(id)s;
         """
@@ -159,7 +209,14 @@ def update_grupo_senior(senior_grupo_id: int, payload: SeniorGrupoUpdate):
         update senior_grupo
         set {set_sql}
         where senior_grupo_id = %(senior_grupo_id)s
-        returning senior_grupo_id, senior_id, grupo_id, rol_en_grupo, fecha_alta, fecha_baja, activo;
+        returning
+            senior_grupo_id,
+            senior_id,
+            grupo_id,
+            rol_en_grupo,
+            fecha_alta,
+            fecha_baja,
+            activo;
     """
     try:
         with get_connection(row_factory=dict_row) as conn:
@@ -180,7 +237,11 @@ def delete_grupo_senior(senior_grupo_id: int, hard: bool = False):
     sql = (
         "delete from senior_grupo where senior_grupo_id = %(id)s;"
         if hard
-        else "update senior_grupo set activo = false, fecha_baja = coalesce(fecha_baja, current_date) where senior_grupo_id = %(id)s;"
+        else (
+            "update senior_grupo set activo = false, "
+            "fecha_baja = coalesce(fecha_baja, current_date) "
+            "where senior_grupo_id = %(id)s;"
+        )
     )
     with get_connection() as conn:
         with conn.cursor() as cur:

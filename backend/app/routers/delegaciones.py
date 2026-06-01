@@ -5,7 +5,9 @@ from ..auth import require_admin, require_read
 from ..db import get_connection
 from ..models import DelegacionCreate, DelegacionOut, DelegacionUpdate
 
-router = APIRouter(prefix="/delegaciones", tags=["delegaciones"], dependencies=[Depends(require_read)])
+router = APIRouter(
+    prefix="/delegaciones", tags=["delegaciones"], dependencies=[Depends(require_read)]
+)
 
 
 def _row_to_delegacion(row) -> DelegacionOut:
@@ -70,7 +72,9 @@ def create_delegacion(payload: DelegacionCreate, _: str = Depends(require_admin)
 
 
 @router.patch("/{delegacion_id}", response_model=DelegacionOut)
-def update_delegacion(delegacion_id: int, payload: DelegacionUpdate, _: str = Depends(require_admin)):
+def update_delegacion(
+    delegacion_id: int, payload: DelegacionUpdate, _: str = Depends(require_admin)
+):
     data = payload.model_dump(exclude_unset=True)
     if not data:
         return get_delegacion(delegacion_id)

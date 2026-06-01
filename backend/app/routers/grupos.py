@@ -20,7 +20,15 @@ def list_grupos(
 ):
     where = "" if include_inactive else "where activo = true"
     sql = f"""
-        select grupo_id, nombre_grupo, descripcion, color_hex, canal_teams, responsable_senior_id, delegacion_id, activo
+        select
+            grupo_id,
+            nombre_grupo,
+            descripcion,
+            color_hex,
+            canal_teams,
+            responsable_senior_id,
+            delegacion_id,
+            activo
         from grupo
         {where}
         order by grupo_id asc
@@ -35,7 +43,15 @@ def list_grupos(
 @router.get("/{grupo_id}", response_model=GrupoOut)
 def get_grupo(grupo_id: int):
     sql = """
-        select grupo_id, nombre_grupo, descripcion, color_hex, canal_teams, responsable_senior_id, delegacion_id, activo
+        select
+            grupo_id,
+            nombre_grupo,
+            descripcion,
+            color_hex,
+            canal_teams,
+            responsable_senior_id,
+            delegacion_id,
+            activo
         from grupo
         where grupo_id = %(grupo_id)s;
     """
@@ -51,9 +67,33 @@ def get_grupo(grupo_id: int):
 @router.post("", response_model=GrupoOut, status_code=201)
 def create_grupo(payload: GrupoCreate, _: str = Depends(require_write)):
     sql = """
-        insert into grupo (nombre_grupo, descripcion, color_hex, canal_teams, responsable_senior_id, delegacion_id, activo)
-        values (%(nombre_grupo)s, %(descripcion)s, %(color_hex)s, %(canal_teams)s, %(responsable_senior_id)s, %(delegacion_id)s, %(activo)s)
-        returning grupo_id, nombre_grupo, descripcion, color_hex, canal_teams, responsable_senior_id, delegacion_id, activo;
+        insert into grupo (
+            nombre_grupo,
+            descripcion,
+            color_hex,
+            canal_teams,
+            responsable_senior_id,
+            delegacion_id,
+            activo
+        )
+        values (
+            %(nombre_grupo)s,
+            %(descripcion)s,
+            %(color_hex)s,
+            %(canal_teams)s,
+            %(responsable_senior_id)s,
+            %(delegacion_id)s,
+            %(activo)s
+        )
+        returning
+            grupo_id,
+            nombre_grupo,
+            descripcion,
+            color_hex,
+            canal_teams,
+            responsable_senior_id,
+            delegacion_id,
+            activo;
     """
     try:
         with get_connection(row_factory=dict_row) as conn:
@@ -86,7 +126,15 @@ def update_grupo(grupo_id: int, payload: GrupoUpdate, _: str = Depends(require_w
         update grupo
         set {set_sql}
         where grupo_id = %(grupo_id)s
-        returning grupo_id, nombre_grupo, descripcion, color_hex, canal_teams, responsable_senior_id, delegacion_id, activo;
+        returning
+            grupo_id,
+            nombre_grupo,
+            descripcion,
+            color_hex,
+            canal_teams,
+            responsable_senior_id,
+            delegacion_id,
+            activo;
     """
 
     try:

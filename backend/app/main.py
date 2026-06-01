@@ -3,9 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from .db import get_connection
-from .routers.auth import router as auth_router
-from .routers.actividades import router as actividades_router
 from .routers.actividad_seniors import router as actividad_seniors_router
+from .routers.actividades import router as actividades_router
+from .routers.auth import router as auth_router
 from .routers.centros import router as centros_router
 from .routers.delegaciones import router as delegaciones_router
 from .routers.grupo_seniors import router as grupo_seniors_router

@@ -2,7 +2,8 @@ import os
 
 # Make JWT verification deterministic in tests (no DB required).
 os.environ.setdefault("AUTH_SECRET_KEY", "TEST_SECRET_KEY_CHANGE_ME")
-# Enable bootstrap-admin role checks in require_* deps (role comes from settings/DB, not JWT claims).
+# Enable bootstrap-admin role checks in require_* deps.
+# Role comes from settings/DB, not JWT claims.
 os.environ.setdefault("AUTH_PASSWORD_HASH", "dummy")
 
 import pytest

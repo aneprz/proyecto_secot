@@ -42,7 +42,11 @@ class _FakeCursor:
         params = params or {}
         normalized = " ".join(sql.split()).lower()
 
-        if normalized.startswith("select") and "from sesion s" in normalized and "where sesion_id" not in normalized:
+        if (
+            normalized.startswith("select")
+            and "from sesion s" in normalized
+            and "where sesion_id" not in normalized
+        ):
             rows = []
             for row in sorted(self._db.sesiones.values(), key=lambda r: r.sesion_id):
                 if "s.activo = true" in normalized and not row.activo:
@@ -79,7 +83,11 @@ class _FakeCursor:
             self.rowcount = len(rows)
             return
 
-        if normalized.startswith("select") and "from sesion" in normalized and "where sesion_id" in normalized:
+        if (
+            normalized.startswith("select")
+            and "from sesion" in normalized
+            and "where sesion_id" in normalized
+        ):
             sesion_id = int(params["sesion_id"])
             row = self._db.sesiones.get(sesion_id)
             self._result_one = (
@@ -283,4 +291,3 @@ def test_sesiones_crud(client: TestClient, auth_token: str, fake_db: _FakeDb):
     res = client.get("/sesiones", headers=headers)
     assert res.status_code == 200, res.text
     assert len(res.json()) == 0
-

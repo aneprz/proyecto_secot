@@ -23,8 +23,18 @@ def list_actividades(
     where = "" if include_inactive else "where activo = true"
     sql = f"""
         select
-            actividad_id, grupo_id, centro_id, delegacion_id, titulo_actividad, descripcion, tipo_actividad,
-            senior_responsable_actividad_id, estado_actividad, fecha_inicio_prevista, fecha_fin_prevista, activo
+            actividad_id,
+            grupo_id,
+            centro_id,
+            delegacion_id,
+            titulo_actividad,
+            descripcion,
+            tipo_actividad,
+            senior_responsable_actividad_id,
+            estado_actividad,
+            fecha_inicio_prevista,
+            fecha_fin_prevista,
+            activo
         from actividad
         {where}
         order by actividad_id asc
@@ -40,8 +50,18 @@ def list_actividades(
 def get_actividad(actividad_id: int):
     sql = """
         select
-            actividad_id, grupo_id, centro_id, delegacion_id, titulo_actividad, descripcion, tipo_actividad,
-            senior_responsable_actividad_id, estado_actividad, fecha_inicio_prevista, fecha_fin_prevista, activo
+            actividad_id,
+            grupo_id,
+            centro_id,
+            delegacion_id,
+            titulo_actividad,
+            descripcion,
+            tipo_actividad,
+            senior_responsable_actividad_id,
+            estado_actividad,
+            fecha_inicio_prevista,
+            fecha_fin_prevista,
+            activo
         from actividad
         where actividad_id = %(actividad_id)s;
     """
@@ -58,16 +78,44 @@ def get_actividad(actividad_id: int):
 def create_actividad(payload: ActividadCreate, _: str = Depends(require_write)):
     sql = """
         insert into actividad (
-            grupo_id, centro_id, delegacion_id, titulo_actividad, descripcion, tipo_actividad,
-            senior_responsable_actividad_id, estado_actividad, fecha_inicio_prevista, fecha_fin_prevista, activo
+            grupo_id,
+            centro_id,
+            delegacion_id,
+            titulo_actividad,
+            descripcion,
+            tipo_actividad,
+            senior_responsable_actividad_id,
+            estado_actividad,
+            fecha_inicio_prevista,
+            fecha_fin_prevista,
+            activo
         )
         values (
-            %(grupo_id)s, %(centro_id)s, %(delegacion_id)s, %(titulo_actividad)s, %(descripcion)s, %(tipo_actividad)s,
-            %(senior_responsable_actividad_id)s, %(estado_actividad)s, %(fecha_inicio_prevista)s, %(fecha_fin_prevista)s, %(activo)s
+            %(grupo_id)s,
+            %(centro_id)s,
+            %(delegacion_id)s,
+            %(titulo_actividad)s,
+            %(descripcion)s,
+            %(tipo_actividad)s,
+            %(senior_responsable_actividad_id)s,
+            %(estado_actividad)s,
+            %(fecha_inicio_prevista)s,
+            %(fecha_fin_prevista)s,
+            %(activo)s
         )
         returning
-            actividad_id, grupo_id, centro_id, delegacion_id, titulo_actividad, descripcion, tipo_actividad,
-            senior_responsable_actividad_id, estado_actividad, fecha_inicio_prevista, fecha_fin_prevista, activo;
+            actividad_id,
+            grupo_id,
+            centro_id,
+            delegacion_id,
+            titulo_actividad,
+            descripcion,
+            tipo_actividad,
+            senior_responsable_actividad_id,
+            estado_actividad,
+            fecha_inicio_prevista,
+            fecha_fin_prevista,
+            activo;
     """
     with get_connection(row_factory=dict_row) as conn:
         with conn.cursor() as cur:
@@ -78,9 +126,7 @@ def create_actividad(payload: ActividadCreate, _: str = Depends(require_write)):
 
 
 @router.patch("/{actividad_id}", response_model=ActividadOut)
-def update_actividad(
-    actividad_id: int, payload: ActividadUpdate, _: str = Depends(require_write)
-):
+def update_actividad(actividad_id: int, payload: ActividadUpdate, _: str = Depends(require_write)):
     data = payload.model_dump(exclude_unset=True)
     if not data:
         return get_actividad(actividad_id)
@@ -97,8 +143,18 @@ def update_actividad(
         set {set_sql}
         where actividad_id = %(actividad_id)s
         returning
-            actividad_id, grupo_id, centro_id, delegacion_id, titulo_actividad, descripcion, tipo_actividad,
-            senior_responsable_actividad_id, estado_actividad, fecha_inicio_prevista, fecha_fin_prevista, activo;
+            actividad_id,
+            grupo_id,
+            centro_id,
+            delegacion_id,
+            titulo_actividad,
+            descripcion,
+            tipo_actividad,
+            senior_responsable_actividad_id,
+            estado_actividad,
+            fecha_inicio_prevista,
+            fecha_fin_prevista,
+            activo;
     """
 
     with get_connection(row_factory=dict_row) as conn:
@@ -124,4 +180,3 @@ def delete_actividad(actividad_id: int, hard: bool = False, _: str = Depends(req
             if cur.rowcount == 0:
                 raise HTTPException(status_code=404, detail="Actividad no encontrada")
             conn.commit()
-

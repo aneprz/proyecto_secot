@@ -20,7 +20,16 @@ def list_usuarios(
 ):
     where = "" if include_inactive else "where activo = true"
     sql = f"""
-        select usuario_id, username, email, rol, senior_id, delegacion_id, activo, creado_en, ultimo_login_en
+        select
+            usuario_id,
+            username,
+            email,
+            rol,
+            senior_id,
+            delegacion_id,
+            activo,
+            creado_en,
+            ultimo_login_en
         from usuario
         {where}
         order by usuario_id asc
@@ -35,7 +44,16 @@ def list_usuarios(
 @router.get("/{usuario_id}", response_model=UsuarioOut)
 def get_usuario(usuario_id: int):
     sql = """
-        select usuario_id, username, email, rol, senior_id, delegacion_id, activo, creado_en, ultimo_login_en
+        select
+            usuario_id,
+            username,
+            email,
+            rol,
+            senior_id,
+            delegacion_id,
+            activo,
+            creado_en,
+            ultimo_login_en
         from usuario
         where usuario_id = %(usuario_id)s;
     """
@@ -55,9 +73,34 @@ def create_usuario(payload: UsuarioCreate):
     data["password_hash"] = hash_password(plain_password)
 
     sql = """
-        insert into usuario (username, email, password_hash, rol, senior_id, delegacion_id, activo)
-        values (%(username)s, %(email)s, %(password_hash)s, %(rol)s, %(senior_id)s, %(delegacion_id)s, %(activo)s)
-        returning usuario_id, username, email, rol, senior_id, delegacion_id, activo, creado_en, ultimo_login_en;
+        insert into usuario (
+            username,
+            email,
+            password_hash,
+            rol,
+            senior_id,
+            delegacion_id,
+            activo
+        )
+        values (
+            %(username)s,
+            %(email)s,
+            %(password_hash)s,
+            %(rol)s,
+            %(senior_id)s,
+            %(delegacion_id)s,
+            %(activo)s
+        )
+        returning
+            usuario_id,
+            username,
+            email,
+            rol,
+            senior_id,
+            delegacion_id,
+            activo,
+            creado_en,
+            ultimo_login_en;
     """
     try:
         with get_connection(row_factory=dict_row) as conn:
@@ -102,7 +145,16 @@ def update_usuario(usuario_id: int, payload: UsuarioUpdate):
         update usuario
         set {set_sql}
         where usuario_id = %(usuario_id)s
-        returning usuario_id, username, email, rol, senior_id, delegacion_id, activo, creado_en, ultimo_login_en;
+        returning
+            usuario_id,
+            username,
+            email,
+            rol,
+            senior_id,
+            delegacion_id,
+            activo,
+            creado_en,
+            ultimo_login_en;
     """
     try:
         with get_connection(row_factory=dict_row) as conn:

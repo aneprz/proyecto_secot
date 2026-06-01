@@ -37,80 +37,86 @@ def _count_usuarios() -> int:
             return int(cur.fetchone()[0])
 
 
+def _login_admin(payload: LoginRequest) -> TokenResponse | None:
+    if payload.username != settings.auth_username:
+        return None
+
+    if not settings.auth_password_hash:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Auth no configurado (falta AUTH_PASSWORD_HASH)",
+        )
+
+    try:
+        if verify_password(payload.password, settings.auth_password_hash):
+            token = create_access_token(subject=payload.username, extra_claims={"rol": "admin"})
+            return TokenResponse(access_token=token)
+    except UnknownHashError:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Auth no configurado (AUTH_PASSWORD_HASH inválido)",
+        )
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Credenciales inválidas",
+    )
+
+
+def _login_database(payload: LoginRequest) -> str | None:
+    sql = """
+            select
+                u.usuario_id,
+                u.username,
+                u.password_hash,
+                u.rol,
+                u.delegacion_id,
+                d.nombre as delegacion_nombre
+            from usuario u
+            left join delegacion d on u.delegacion_id = d.delegacion_id
+            where u.username = %(username)s and u.activo = true;
+        """
+    with get_connection(row_factory=dict_row) as conn:
+        with conn.cursor() as cur:
+            cur.execute(sql, {"username": payload.username})
+            row = cur.fetchone()
+            try:
+                valid = bool(row) and verify_password(payload.password, row["password_hash"])
+            except UnknownHashError:
+                valid = False
+            if not valid:
+                return None
+
+            cur.execute(
+                "update usuario set ultimo_login_en = now() where usuario_id = %(id)s;",
+                {"id": row["usuario_id"]},
+            )
+            conn.commit()
+            rol = row["rol"] or "read"
+            if rol == "user":
+                rol = "write"
+            extra = {"rol": rol}
+            if row.get("delegacion_id") is not None:
+                extra["delegacion_id"] = int(row["delegacion_id"])
+            if row.get("delegacion_nombre"):
+                extra["delegacion_nombre"] = row["delegacion_nombre"]
+            return create_access_token(subject=row["username"], extra_claims=extra)
+
+
 @router.post("/login", response_model=TokenResponse)
 def login(payload: LoginRequest):
-    # Bootstrap admin por env (siempre permitido cuando está configurado).
-    # Esto evita que un `password_hash` inválido en BD bloquee el acceso (p.ej. datos legacy).
     if payload.username == settings.auth_username:
-        if not settings.auth_password_hash:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Auth no configurado (falta AUTH_PASSWORD_HASH)",
-            )
-        try:
-            if verify_password(payload.password, settings.auth_password_hash):
-                token = create_access_token(subject=payload.username, extra_claims={"rol": "admin"})
-                return TokenResponse(access_token=token)
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Credenciales inválidas",
-            )
-        except UnknownHashError:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Auth no configurado (AUTH_PASSWORD_HASH inválido)",
-            )
+        return _login_admin(payload)
 
-    # Auth por BD (tabla `usuario`). Mantiene fallback a env para bootstrap/admin.
     if _usuario_table_exists():
-        sql = """
-                select u.usuario_id, u.username, u.password_hash, u.rol, u.delegacion_id, d.nombre as delegacion_nombre
-                from usuario u
-                left join delegacion d on u.delegacion_id = d.delegacion_id
-                where u.username = %(username)s and u.activo = true;
-            """
-        with get_connection(row_factory=dict_row) as conn:
-            with conn.cursor() as cur:
-                cur.execute(sql, {"username": payload.username})
-                row = cur.fetchone()
-                try:
-                    valid = bool(row) and verify_password(payload.password, row["password_hash"])
-                except UnknownHashError:
-                    valid = False
-                if valid:
-                    cur.execute(
-                        "update usuario set ultimo_login_en = now() where usuario_id = %(id)s;",
-                        {"id": row["usuario_id"]},
-                    )
-                    conn.commit()
-                    rol = row["rol"] or "read"
-                    if rol == "user":
-                        rol = "write"
-                    extra = {"rol": rol}
-                    # Añadir delegación al token si existe
-                    if row.get("delegacion_id") is not None:
-                        extra["delegacion_id"] = int(row["delegacion_id"]) if row["delegacion_id"] is not None else None
-                    if row.get("delegacion_nombre"):
-                        extra["delegacion_nombre"] = row["delegacion_nombre"]
-                    token = create_access_token(
-                        subject=row["username"],
-                        extra_claims=extra,
-                    )
-                    return TokenResponse(access_token=token)
+        token = _login_database(payload)
+        if token is not None:
+            return TokenResponse(access_token=token)
 
-        # Bootstrap: permite login por env SOLO si la tabla existe pero está vacía.
-        # Así puedes entrar una vez, crear el primer usuario (admin) en BD y a partir de ahí
-        # el login queda exclusivamente controlado por la tabla `usuario`.
         if _count_usuarios() > 0:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Credenciales inválidas",
             )
-        # Tabla existe pero está vacía: no hay credenciales válidas salvo el bootstrap admin
-        # (que ya se ha manejado arriba).
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Credenciales inválidas",
-        )
 
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Credenciales inválidas")

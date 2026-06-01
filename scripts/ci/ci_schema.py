@@ -13,6 +13,7 @@ create table if not exists senior (
   email_personal varchar(254),
   email_secot varchar(254),
   movil varchar(30),
+  delegacion_id bigint,
   fecha_alta date,
   activo boolean not null default true
 );
@@ -32,12 +33,16 @@ create table if not exists grupo (
   color_hex varchar(7),
   canal_teams varchar(255),
   responsable_senior_id bigint,
+  delegacion_id bigint,
   activo boolean not null default true
 );
 ''')
 cur.execute("select 1 from pg_constraint where conname = 'uq_grupo_nombre_grupo'")
 if cur.fetchone() is None:
     cur.execute('alter table grupo add constraint uq_grupo_nombre_grupo unique (nombre_grupo)')
+cur.execute("select 1 from pg_constraint where conname = 'fk_grupo_responsable_senior' and conrelid = 'grupo'::regclass")
+if cur.fetchone() is None:
+    cur.execute('alter table grupo add constraint fk_grupo_responsable_senior foreign key (responsable_senior_id) references senior (senior_id) on delete restrict')
 
 cur.execute('''
 create table if not exists centro (
@@ -50,15 +55,37 @@ create table if not exists centro (
   email_responsable varchar(254),
   telefono_responsable varchar(30),
   observaciones text,
+  delegacion_id bigint,
   activo boolean not null default true
 );
 ''')
+cur.execute('''
+create table if not exists delegacion (
+  delegacion_id bigserial primary key,
+  codigo varchar(80) not null,
+  nombre varchar(200) not null,
+  activo boolean not null default true
+);
+''')
+cur.execute("select 1 from pg_constraint where conname = 'uq_delegacion_codigo'")
+if cur.fetchone() is None:
+    cur.execute('alter table delegacion add constraint uq_delegacion_codigo unique (codigo)')
+cur.execute("select 1 from pg_constraint where conname = 'fk_senior_delegacion' and conrelid = 'senior'::regclass")
+if cur.fetchone() is None:
+    cur.execute('alter table senior add constraint fk_senior_delegacion foreign key (delegacion_id) references delegacion (delegacion_id) on delete restrict')
+cur.execute("select 1 from pg_constraint where conname = 'fk_grupo_delegacion' and conrelid = 'grupo'::regclass")
+if cur.fetchone() is None:
+    cur.execute('alter table grupo add constraint fk_grupo_delegacion foreign key (delegacion_id) references delegacion (delegacion_id) on delete restrict')
+cur.execute("select 1 from pg_constraint where conname = 'fk_centro_delegacion' and conrelid = 'centro'::regclass")
+if cur.fetchone() is None:
+    cur.execute('alter table centro add constraint fk_centro_delegacion foreign key (delegacion_id) references delegacion (delegacion_id) on delete restrict')
 
 cur.execute('''
 create table if not exists actividad (
   actividad_id bigserial primary key,
   grupo_id bigint not null,
   centro_id bigint not null,
+  delegacion_id bigint,
   titulo_actividad varchar(200) not null,
   descripcion text,
   tipo_actividad varchar(80),
@@ -75,6 +102,9 @@ if cur.fetchone() is None:
 cur.execute("select 1 from pg_constraint where conname = 'fk_actividad_centro' and conrelid = 'actividad'::regclass")
 if cur.fetchone() is None:
     cur.execute('alter table actividad add constraint fk_actividad_centro foreign key (centro_id) references centro (centro_id) on delete restrict')
+cur.execute("select 1 from pg_constraint where conname = 'fk_actividad_delegacion' and conrelid = 'actividad'::regclass")
+if cur.fetchone() is None:
+    cur.execute('alter table actividad add constraint fk_actividad_delegacion foreign key (delegacion_id) references delegacion (delegacion_id) on delete restrict')
 
 cur.execute('''
 create table if not exists usuario (
@@ -84,6 +114,7 @@ create table if not exists usuario (
   password_hash text not null,
   rol varchar(30) not null default 'user',
   senior_id bigint,
+  delegacion_id bigint,
   activo boolean not null default true,
   creado_en timestamptz not null default now(),
   ultimo_login_en timestamptz
@@ -95,6 +126,12 @@ if cur.fetchone() is None:
 cur.execute("select 1 from pg_constraint where conname = 'uq_usuario_email'")
 if cur.fetchone() is None:
     cur.execute('alter table usuario add constraint uq_usuario_email unique (email)')
+cur.execute("select 1 from pg_constraint where conname = 'fk_usuario_senior' and conrelid = 'usuario'::regclass")
+if cur.fetchone() is None:
+    cur.execute('alter table usuario add constraint fk_usuario_senior foreign key (senior_id) references senior (senior_id) on delete restrict')
+cur.execute("select 1 from pg_constraint where conname = 'fk_usuario_delegacion' and conrelid = 'usuario'::regclass")
+if cur.fetchone() is None:
+    cur.execute('alter table usuario add constraint fk_usuario_delegacion foreign key (delegacion_id) references delegacion (delegacion_id) on delete restrict')
 
 conn.commit()
 cur.close()

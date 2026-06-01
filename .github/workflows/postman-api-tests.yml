@@ -85,8 +85,9 @@ jobs:
           export AUTH_PASSWORD_HASH="${auth_hash}"
           echo "AUTH_PASSWORD_HASH=${auth_hash}" >> "$GITHUB_ENV"
 
-          # Start FastAPI in background.
-          (cd backend && uvicorn app.main:app --host 127.0.0.1 --port 8000 --log-level warning) &
+          # Start FastAPI in background and detach it so it survives after this step.
+          cd backend && nohup python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --log-level warning > uvicorn.log 2>&1 &
+          disown || true
 
           echo "NORMALIZED_BASE_URL=http://127.0.0.1:8000" >> "$GITHUB_ENV"
           echo "BASE_URL=http://127.0.0.1:8000" >> "$GITHUB_ENV"

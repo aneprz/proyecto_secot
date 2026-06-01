@@ -130,6 +130,10 @@ export default function ActividadesPage({ onBack }) {
     setForm({
       grupo_id: String(item.grupo_id ?? ""),
       centro_id: String(item.centro_id ?? ""),
+      delegacion_id:
+        item.delegacion_id !== null && item.delegacion_id !== undefined
+          ? String(item.delegacion_id)
+          : "",
       titulo_actividad: item.titulo_actividad ?? "",
       descripcion: item.descripcion ?? "",
       tipo_actividad: item.tipo_actividad ?? "",
