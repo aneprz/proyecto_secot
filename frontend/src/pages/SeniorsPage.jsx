@@ -72,7 +72,10 @@ export default function SeniorsPage({ onBack }) {
       email_personal: item.email_personal ?? "",
       email_secot: item.email_secot ?? "",
       movil: item.movil ?? "+34 ",
-      delegacion_id: item.delegacion_id ?? "",
+      delegacion_id:
+        item.delegacion_id !== null && item.delegacion_id !== undefined
+          ? String(item.delegacion_id)
+          : "",
       fecha_alta: item.fecha_alta ?? "",
       activo: Boolean(item.activo),
     });

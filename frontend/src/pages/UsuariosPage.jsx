@@ -94,7 +94,10 @@ export default function UsuariosPage({ onBack }) {
       senior_id: item.senior_id ?? "",
       password: "", // No mostrar contraseña existente
       activo: Boolean(item.activo),
-      delegacion_id: item.delegacion_id ?? "",
+      delegacion_id:
+        item.delegacion_id !== null && item.delegacion_id !== undefined
+          ? String(item.delegacion_id)
+          : "",
     });
   }
 
