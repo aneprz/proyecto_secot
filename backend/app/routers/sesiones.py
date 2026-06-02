@@ -1,4 +1,4 @@
-from datetime import time
+from datetime import date, time
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from psycopg.rows import dict_row
@@ -66,6 +66,69 @@ def list_sesiones(
         order by s.sesion_id asc
         limit %(limit)s offset %(offset)s;
     """
+    with get_connection(row_factory=dict_row) as conn:
+        with conn.cursor() as cur:
+            cur.execute(sql, params)
+            return [_row_to_sesion(r) for r in cur.fetchall()]
+
+
+@router.get("/calendar", response_model=list[SesionOut])
+def list_sesiones_calendar(
+    start_date: date | None = None,
+    end_date: date | None = None,
+    delegacion_id: int | None = None,
+    grupo_id: int | None = None,
+    centro_id: int | None = None,
+    include_inactive: bool = False,
+):
+    where_parts = ["s.es_visible_calendario = true"]
+    params = {}
+
+    if start_date is not None:
+        where_parts.append("s.fecha >= %(start_date)s")
+        params["start_date"] = start_date
+    if end_date is not None:
+        where_parts.append("s.fecha <= %(end_date)s")
+        params["end_date"] = end_date
+    if grupo_id is not None:
+        where_parts.append("s.grupo_id = %(grupo_id)s")
+        params["grupo_id"] = grupo_id
+    if centro_id is not None:
+        where_parts.append("s.centro_id = %(centro_id)s")
+        params["centro_id"] = centro_id
+    if delegacion_id is not None:
+        where_parts.append(
+            "(g.delegacion_id = %(delegacion_id)s OR c.delegacion_id = %(delegacion_id)s)"
+        )
+        params["delegacion_id"] = delegacion_id
+    if not include_inactive:
+        where_parts.append("s.activo = true")
+
+    where_clause = "where " + " and ".join(where_parts) if where_parts else ""
+
+    sql = f"""
+        select
+            s.sesion_id,
+            s.actividad_id,
+            s.grupo_id,
+            s.centro_id,
+            s.fecha,
+            s.hora_inicio,
+            s.hora_fin,
+            s.duracion_horas,
+            s.titulo_sesion,
+            s.ubicacion,
+            s.estado_sesion,
+            s.observaciones,
+            s.es_visible_calendario,
+            s.activo
+        from sesion s
+        left join grupo g on g.grupo_id = s.grupo_id
+        left join centro c on c.centro_id = s.centro_id
+        {where_clause}
+        order by s.fecha asc, s.hora_inicio asc;
+    """
+
     with get_connection(row_factory=dict_row) as conn:
         with conn.cursor() as cur:
             cur.execute(sql, params)

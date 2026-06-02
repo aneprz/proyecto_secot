@@ -123,6 +123,21 @@ export default function MenuPage({ onNavigate }) {
             </div>
           </div>
 
+          {/* Calendario */}
+          <div
+            style={{
+              ...styles.menuCard,
+              borderTop: "4px solid #2980b9",
+              ...(canAccess("GET") ? {} : styles.disabled),
+            }}
+            onClick={() => canAccess("GET") && onNavigate("calendario")}
+          >
+            <div style={styles.cardIcon}>📅</div>
+            <h3 style={styles.cardTitle}>Calendario</h3>
+            <p style={styles.cardDesc}>Ver sesiones programadas en un periodo con filtros</p>
+            <div style={styles.badge}>{canWrite() ? "👁️ Lectura" : "👁️ Lectura"}</div>
+          </div>
+
           {/* Delegaciones (Solo Admin) */}
           {canAdmin() && (
             <div

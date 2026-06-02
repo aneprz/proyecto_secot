@@ -10,6 +10,7 @@ import DelegacionesPage from "../pages/DelegacionesPage.jsx";
 import UsuariosPage from "../pages/UsuariosPage.jsx";
 import ActividadesPage from "../pages/ActividadesPage.jsx";
 import SesionesPage from "../pages/SesionesPage.jsx";
+import CalendarPage from "../pages/CalendarPage.jsx";
 
 export default function App() {
   const [token, setToken] = useState(() => getAccessToken());
@@ -47,6 +48,7 @@ export default function App() {
         {currentPage === "centros" && <CentrosPage onBack={goBack} />}
         {currentPage === "actividades" && <ActividadesPage onBack={goBack} />}
         {currentPage === "sesiones" && <SesionesPage onBack={goBack} />}
+        {currentPage === "calendario" && <CalendarPage onBack={goBack} />}
         {currentPage === "delegaciones" && <DelegacionesPage onBack={goBack} />}
         {currentPage === "usuarios" && <UsuariosPage onBack={goBack} />}
         {currentPage === "menu" && <MenuPage onNavigate={navigateTo} />}
